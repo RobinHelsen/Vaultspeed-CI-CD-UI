@@ -1,0 +1,498 @@
+/* ================================================================
+   VaultSpeed CI/CD Guide — Global Styles
+   ================================================================ */
+
+:root {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-hover: #242836;
+  --color-border: #2e3348;
+  --color-primary: #6c63ff;
+  --color-primary-hover: #5a52e0;
+  --color-text: #e4e6f0;
+  --color-text-muted: #8b8fa8;
+  --color-accent: #43e8d8;
+  --color-success: #4ade80;
+  --radius: 8px;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── App layout ─────────────────────────────────────────────────── */
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
+}
+
+.app-header {
+  text-align: center;
+}
+
+.app-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}
+
+.app-header .subtitle {
+  color: var(--color-text-muted);
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── Sections ───────────────────────────────────────────────────── */
+
+.selector-section,
+.result-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.selector-section h2,
+.result-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+}
+
+.selector-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Dropdown ───────────────────────────────────────────────────── */
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.dropdown-button {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s;
+}
+
+.dropdown-button:hover {
+  border-color: var(--color-primary);
+}
+
+.dropdown-arrow {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.dropdown-item {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dropdown-item:hover {
+  background: var(--color-surface-hover);
+}
+
+.dropdown-item.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ── Checkbox menu (multi-select) ───────────────────────────────── */
+
+.checkbox-menu {
+  min-width: 320px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.checkbox-item input[type='checkbox'] {
+  margin-top: 0.25rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* ── Level selector ─────────────────────────────────────────────── */
+
+.level-selector .level-options {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.level-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.level-option:hover {
+  border-color: var(--color-primary);
+}
+
+.level-option.active {
+  border-color: var(--color-primary);
+  background: rgba(108, 99, 255, 0.15);
+  color: var(--color-primary);
+}
+
+.level-option input[type='radio'] {
+  display: none;
+}
+
+/* ── Result panel ───────────────────────────────────────────────── */
+
+.result-panel.empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2rem 1rem;
+  font-style: italic;
+}
+
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.guideline-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.guideline-card h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+
+.guideline-card ol {
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guideline-card ol li {
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.guideline-card ol li::marker {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.guideline-notes {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(108, 99, 255, 0.08);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.guideline-notes strong {
+  color: var(--color-text);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+
+.app-footer {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.app-footer code {
+  background: var(--color-surface);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ── Mode selector ──────────────────────────────────────────────── */
+
+.mode-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.mode-button {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  color: var(--color-text);
+}
+
+.mode-button:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-hover);
+}
+
+.mode-button.active {
+  border-color: var(--color-primary);
+  background: rgba(108, 99, 255, 0.12);
+}
+
+.mode-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mode-text strong {
+  font-size: 0.95rem;
+}
+
+.mode-text small {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Stack search results ───────────────────────────────────────── */
+
+.stack-results {
+  gap: 0.75rem;
+}
+
+.stack-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  transition: border-color 0.2s;
+}
+
+.stack-card.top-rank {
+  border-left: 4px solid var(--color-primary);
+}
+
+.stack-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stack-rank {
+  font-size: 1.3rem;
+  min-width: 2.2rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.stack-name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.stack-chip {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.stack-chip.data {
+  background: rgba(67, 232, 216, 0.15);
+  color: var(--color-accent);
+}
+
+.stack-chip.cicd {
+  background: rgba(108, 99, 255, 0.15);
+  color: var(--color-primary);
+}
+
+.stack-chip.orch {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--color-success);
+}
+
+.stack-separator {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.stack-score {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.stack-score small {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.stack-bar-container {
+  height: 6px;
+  background: var(--color-surface-hover);
+  border-radius: 3px;
+  margin: 0.65rem 0;
+  overflow: hidden;
+}
+
+.stack-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.stack-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.3rem 1rem;
+  margin-top: 0.4rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+}
+
+.breakdown-label {
+  color: var(--color-text-muted);
+}
+
+.breakdown-score {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .mode-selector {
+    grid-template-columns: 1fr;
+  }
+}
