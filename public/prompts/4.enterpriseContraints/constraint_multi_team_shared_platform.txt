@@ -1,0 +1,6 @@
+The platform is shared by multiple teams.
+
+The CI/CD design must prevent naming collisions, release overlap, and uncontrolled cross-team impact.
+Do not assume one team has exclusive control over the platform.
+
+Use naming standards, isolation boundaries, environment conventions, and controlled deployment scopes.

@@ -1,0 +1,7 @@
+Environment separation is required.
+
+Development, test, staging, and production must remain logically and operationally separated.
+Do not share secrets, deployment identities, or uncontrolled configuration across environments.
+
+Use separate configuration, credentials, approvals, and deployment boundaries for each environment.
+Promotion should move approved release content between environments in a controlled way.

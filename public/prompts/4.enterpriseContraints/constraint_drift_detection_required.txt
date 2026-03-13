@@ -1,0 +1,6 @@
+Drift detection is required.
+
+The solution must account for differences between the desired release state and the actual deployed state.
+Do not assume environments remain unchanged outside the pipeline.
+
+Use state comparison, validation checks, or deployment history controls to detect unexpected changes before release execution.

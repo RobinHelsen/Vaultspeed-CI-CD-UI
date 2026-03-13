@@ -1,0 +1,38 @@
+name: Execute SQL on Main Merge
+
+on:
+  push:
+    branches:
+      - uat
+
+jobs:
+  execute-sql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install snowflake-connector-python
+
+      - name: Run SQL executor on merged code
+        env:
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+        run: |
+          python .github/scripts/execute_sql.py ${{ github.event.before }} ${{ github.sha }}
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "::error ::SQL execution failed. Please check the logs above for more details."

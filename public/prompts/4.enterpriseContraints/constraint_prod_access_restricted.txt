@@ -1,0 +1,7 @@
+Production access is restricted.
+
+Direct human or pipeline access to production targets may be limited or prohibited.
+Production deployment must use approved controlled paths.
+
+Use delegated deployment agents, approved service identities, protected environments, or controlled release pipelines.
+Minimize standing access and avoid direct interactive deployment patterns.

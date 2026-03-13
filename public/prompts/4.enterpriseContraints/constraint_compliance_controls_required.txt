@@ -1,0 +1,6 @@
+Compliance controls are required.
+
+The CI/CD solution must include controlled access, traceability, release governance, and secure handling of configuration and secrets.
+Do not assume a lightweight developer-only delivery model is acceptable.
+
+Use approvals, protected environments, auditable changes, controlled identities, and repeatable release procedures.

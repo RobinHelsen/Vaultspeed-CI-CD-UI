@@ -1,0 +1,43 @@
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: windows-2019
+  steps:
+  - checkout: self
+  - task: AzurePowerShell@5
+    displayName: 'Azure PowerShell script: InlineScript'
+    inputs:
+      azureSubscription: 'xyz'
+      ScriptType: 'InlineScript'
+      Inline: |
+        $targetfolder = "$(Build.StagingDirectory)" + "/"
+        
+        
+        function CopyFiles{
+            param( [string]$source )
+        
+            $target = $targetfolder + $source
+        
+            New-Item -Force $target
+            copy-item $source $target -Force
+            echo $source $target
+        }
+        
+        $changes = git diff --name-only --relative HEAD^ HEAD 
+        echo $(git diff --name-only --relative HEAD^ HEAD)
+
+        if ($changes -is [string]){ CopyFiles $changes }
+        else
+        {
+            if ($changes -is [array])
+            {       
+                foreach ($change in $changes){ CopyFiles $change }
+            }
+        }
+      preferredAzurePowerShellVersion: '7.0.0'
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Pipeline Artifact
+    inputs:
+      path: $(build.artifactstagingdirectory)
+      artifactName: VaultSpeedCode

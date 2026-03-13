@@ -1,0 +1,23 @@
+stages:
+  - deploy
+
+execute-sql-bigquery:
+  stage: deploy
+  image: python:3.11-slim
+  variables:
+    GIT_DEPTH: "0"   # needed so git diff base..head works reliably
+    PYTHONUNBUFFERED: "1"
+  before_script:
+    - python -V
+    - pip install --no-cache-dir -r requirements.txt
+
+    # Service account JSON is stored in a masked GitLab variable:
+    # - either raw JSON, or base64; this example assumes raw JSON
+    - echo "$GCP_SA_KEY_JSON" > /tmp/gcp-sa.json
+    - export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-sa.json
+
+  script:
+    - python execute_sql_bq.py "$CI_COMMIT_BEFORE_SHA" "$CI_COMMIT_SHA"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "uat"'

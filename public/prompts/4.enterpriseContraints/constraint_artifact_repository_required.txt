@@ -1,0 +1,6 @@
+An approved artifact repository is required.
+
+Release packages must be stored in an enterprise-approved artifact or package repository.
+Do not rely on transient pipeline outputs alone for controlled promotion.
+
+Use a governed artifact store with retention, access control, and version traceability.

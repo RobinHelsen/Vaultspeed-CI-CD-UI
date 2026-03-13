@@ -1,0 +1,6 @@
+Policy-as-code is required.
+
+Deployment and infrastructure changes must be validated against formal policy rules.
+Do not rely only on manual review for compliance-sensitive controls.
+
+Use automated policy checks for infrastructure, security, naming, or environment guardrails before deployment is approved.

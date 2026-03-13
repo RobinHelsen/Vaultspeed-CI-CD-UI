@@ -1,0 +1,7 @@
+Immutable release artifacts are required.
+
+Once a release artifact is created and approved, it must not be changed.
+Do not deploy loose files from mutable branches when controlled promotion is required.
+
+Package release content into immutable artifacts and promote the same artifact across environments.
+Use versioning and artifact retention to support traceability and rollback reasoning.

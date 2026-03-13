@@ -1,0 +1,6 @@
+Retention controls are required.
+
+Logs, artifacts, and deployment records must follow enterprise retention and cleanup policies.
+Do not keep sensitive artifacts or logs indefinitely by default.
+
+Use controlled retention settings for artifacts, logs, approvals, and deployment history based on enterprise policy.

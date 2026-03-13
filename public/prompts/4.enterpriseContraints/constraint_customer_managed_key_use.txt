@@ -1,0 +1,6 @@
+Customer-managed encryption or key control is required.
+
+Secrets, artifacts, or connected services may need to align with customer-managed key policies.
+Do not assume default platform-managed encryption is sufficient.
+
+Use approved key management integration and keep encryption handling aligned with enterprise standards.

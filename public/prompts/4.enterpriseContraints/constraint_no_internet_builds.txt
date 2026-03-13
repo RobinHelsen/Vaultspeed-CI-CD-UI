@@ -1,0 +1,6 @@
+No internet-based builds are allowed.
+
+Build and deployment execution may not depend on unrestricted internet access.
+Do not assume public package downloads, public container pulls, or SaaS access are available during runtime.
+
+Use mirrored dependencies, internal package repositories, private registries, and approved network paths.

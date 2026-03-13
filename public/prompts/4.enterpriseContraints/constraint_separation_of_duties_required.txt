@@ -1,0 +1,7 @@
+Separation of duties is required.
+
+Development, approval, and production deployment responsibilities must remain separated.
+Do not design a solution where the same actor can develop, approve, and deploy to production without control points.
+
+Use role separation, protected environments, and controlled promotion between stages.
+Ensure deployment permissions align with enterprise governance.

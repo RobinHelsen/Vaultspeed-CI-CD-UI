@@ -1,0 +1,6 @@
+Git-based control is required.
+
+Git must be the source of truth for release content and deployment intent.
+Do not rely on manual drift, untracked hotfixes, or direct unversioned deployment.
+
+Use version-controlled release definitions, repository-based change review, and traceable promotion through branches, tags, or approved release artifacts.

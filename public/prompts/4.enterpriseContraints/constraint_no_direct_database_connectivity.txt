@@ -1,0 +1,7 @@
+Direct database connectivity from CI/CD is not allowed.
+
+The pipeline may not connect directly to the target database from shared or hosted execution environments.
+Database deployment must use an approved controlled execution path.
+
+Use deployment agents inside the allowed network, delegated execution, or approved intermediate deployment services.
+Do not assume JDBC or direct SQL connectivity is available from the pipeline runtime.

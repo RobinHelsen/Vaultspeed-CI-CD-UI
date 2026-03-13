@@ -1,0 +1,7 @@
+Self-hosted runners or agents are required.
+
+Pipeline execution must run on customer-managed infrastructure.
+Do not assume cloud-hosted runners are allowed for deployment.
+
+Use self-hosted execution for access to private tools, internal networks, controlled software, and enterprise runtime dependencies.
+Treat runner lifecycle, patching, and access control as part of the solution design.

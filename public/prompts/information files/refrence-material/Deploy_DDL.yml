@@ -1,0 +1,19 @@
+variables:
+  ServerInstance: 'server-cicd-database.database.windows.net'
+  Database: 'db_cicd_test'
+  Username: 'vaultspeed'
+  Password: 'yIH~zIMb+baC''pG4RCYG'
+
+steps:
+- task: AzurePowerShell@5
+  displayName: 'Deploy DDL'
+  inputs:
+    azureSubscription: 'Vaultspeed - Pro-Services Sandbox (5c7b8256-591a-479b-95af-c8d999a664e5)'
+    ScriptType: InlineScript
+    Inline: |
+     Get-ChildItem -File -Filter *.sql -Path $(System.DefaultWorkingDirectory)/_BuildPipeline_/VaultSpeedCode/vaultspeed/DDL -Recurse | Sort-Object -Property Directory, Name  | ForEach-Object { 
+     Write-Output $_.FullName
+     Add-Content $_.FullName "SELECT GETDATE();"
+     Invoke-SqlCmd -ServerInstance $(ServerInstance) -Database $(Database) -Username $(Username) -Password "$(Password)" -InputFile $_.FullName 
+     }
+    preferredAzurePowerShellVersion: 6.5.0

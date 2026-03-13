@@ -1,0 +1,7 @@
+Enterprise identity integration is required.
+
+Deployment authentication must align with the enterprise identity platform.
+Do not rely on unmanaged personal credentials or embedded shared usernames and passwords.
+
+Prefer service principals, managed identities, federated identity, or centrally governed service accounts.
+Use least privilege and environment-scoped access.

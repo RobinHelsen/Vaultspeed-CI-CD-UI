@@ -1,0 +1,7 @@
+Least-privilege access is required.
+
+Deployment identities must have only the permissions necessary for their scope.
+Do not use broad administrator permissions by default.
+
+Split permissions by environment and deployment function where possible.
+Restrict access to secrets, infrastructure, orchestration, and target platforms separately when appropriate.

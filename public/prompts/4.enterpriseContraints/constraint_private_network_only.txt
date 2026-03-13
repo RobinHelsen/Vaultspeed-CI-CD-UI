@@ -1,0 +1,7 @@
+Private network access is required.
+
+Deployment execution must run through private connectivity or inside the customer-controlled network.
+Do not assume public internet access from runners, agents, or target systems.
+
+Use self-hosted runners, private agents, or approved private networking patterns.
+Keep deployment traffic, secrets access, and target connectivity inside governed network boundaries.

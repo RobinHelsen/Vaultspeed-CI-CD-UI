@@ -1,0 +1,6 @@
+A fixed change window is required.
+
+Production or controlled-environment deployments may only run during approved release windows.
+Do not assume deployments can execute immediately after build or approval.
+
+Use scheduled release controls, manual triggers, or gated execution aligned with the approved change window.

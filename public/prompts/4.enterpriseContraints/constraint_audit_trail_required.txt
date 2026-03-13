@@ -1,0 +1,6 @@
+A full audit trail is required.
+
+Changes, approvals, deployments, and release decisions must be traceable.
+The solution must support clear evidence of who changed what, who approved it, what was deployed, and when.
+
+Use immutable release artifacts, versioned pipelines, deployment history tracking, and auditable approval records.

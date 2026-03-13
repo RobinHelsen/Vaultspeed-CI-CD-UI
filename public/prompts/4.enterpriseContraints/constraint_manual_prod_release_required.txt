@@ -1,0 +1,6 @@
+Production release must be manually triggered.
+
+Production deployment may not start automatically from a merge or build event.
+Use a controlled manual trigger after validation and approval are complete.
+
+Ensure the production trigger is auditable and restricted to authorized operators.

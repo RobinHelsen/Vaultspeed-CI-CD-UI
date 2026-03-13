@@ -1,0 +1,6 @@
+Runner egress is restricted.
+
+Pipeline execution hosts may have limited outbound network access.
+Do not assume unrestricted access to package feeds, APIs, repositories, secret stores, or SaaS services.
+
+Design the solution for approved endpoints, mirrored dependencies, controlled proxies, or internal package sources where required.

@@ -1,0 +1,7 @@
+Manual approvals are required.
+
+Higher environment deployments must include approval gates before execution.
+Do not fully automate release into controlled environments without an explicit approval step.
+
+Use environment-based approvals, release gates, or protected deployment stages.
+Ensure approvers are clearly defined and approvals are auditable.
