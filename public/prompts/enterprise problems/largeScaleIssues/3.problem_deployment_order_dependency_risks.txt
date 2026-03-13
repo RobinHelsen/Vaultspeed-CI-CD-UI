@@ -1,0 +1,115 @@
+Deployment order and dependency risks.
+
+VaultSpeed-generated artifacts often have dependencies and must be deployed in the correct order.
+If the deployment sequence is wrong, dependent objects may fail during execution.
+
+Typical risks include views being created before underlying tables, migrations being applied before base objects exist, or downstream logic referencing objects that are not yet available.
+This can cause broken dependencies, partially deployed environments, failed releases, and difficult recovery after errors.
+
+This problem is especially relevant for:
+- database object creation
+- schema evolution
+- migrations
+- views and derived logic
+- orchestration deployment
+- mixed releases containing both structure and execution logic
+
+The core issue is that generated artifacts are not just a flat list of files.
+They represent a dependency chain.
+The deployment pipeline must understand and respect that dependency chain.
+
+Recommended solution:
+Use a stage-based deployment model combined with file classification metadata and manifest-defined execution order.
+
+1. Stage-based deployment model
+Deploy generated content in fixed stages.
+A typical execution order is:
+- base objects
+- migrations
+- views and logic
+- FMC
+- hooks or custom code
+- orchestration metadata
+
+This creates a predictable deployment flow and reduces the risk of downstream objects being deployed too early.
+
+2. File classification metadata
+Each generated file should be classified by deployment type.
+Typical classifications include:
+- base
+- migration
+- logic
+- view
+- FMC
+- hook
+- orchestration
+
+The pipeline should use this classification to determine which stage a file belongs to and how it should be deployed.
+
+3. Dependency-aware manifest
+The release manifest should define:
+- which files belong to the release
+- file type or stage
+- execution order
+- optional dependency relationships between files or stages
+
+If dependency metadata is available, the pipeline should resolve execution order from that data instead of relying only on filenames or folder names.
+
+4. Pre-deployment validation
+Before execution starts, validate that:
+- required dependency stages are present
+- the manifest order is complete and consistent
+- no files are missing from required earlier stages
+- no object type is being deployed before its prerequisites
+
+This helps detect release packaging issues before deployment begins.
+
+5. Ordered packaging structure
+To simplify implementation, generated output can be split into ordered folders or subpackages.
+Examples:
+- 01_base
+- 02_migrations
+- 03_logic
+- 04_views
+- 05_fmc
+- 06_orchestration
+
+This gives the pipeline a clear execution sequence even when dependency metadata is limited.
+
+6. Platform-specific deployment order rules
+The exact order may differ by target platform.
+Maintain target-specific deployment rules for platforms such as:
+- Snowflake
+- Databricks
+- Oracle
+- BigQuery
+- Microsoft Fabric
+
+The pipeline should apply the correct order logic for the selected platform rather than assuming one universal sequence.
+
+7. Release packaging by execution phase
+Where useful, package a release into ordered subpackages such as:
+- structure
+- migration
+- logic
+- orchestration
+
+This makes promotion safer and makes it easier to validate whether a release is complete.
+
+8. Failure and restart handling
+If a deployment fails in a later stage, the pipeline should know which earlier stages completed successfully.
+Do not restart the entire deployment blindly.
+Restart should be controlled by stage status, execution history, and release metadata.
+
+Preferred implementation pattern:
+- classify generated files by deployment type
+- include stage and order information in the release manifest
+- package releases in ordered folders or subpackages
+- deploy sequentially by stage
+- apply platform-specific order rules where needed
+- validate dependency correctness before execution starts
+
+Recommended approach:
+Treat VaultSpeed deployment as a dependency-aware staged release process.
+Do not deploy generated files as an unordered set.
+Always deploy according to defined execution phases and dependency rules so that base objects exist before dependent logic and orchestration are deployed.

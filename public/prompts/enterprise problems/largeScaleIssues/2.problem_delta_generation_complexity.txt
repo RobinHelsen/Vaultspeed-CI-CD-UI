@@ -1,0 +1,108 @@
+Delta generation complexity.
+
+Delta-based generation makes deployment more complex because the pipeline must ensure that only the correct new or changed code is executed.
+It must also avoid re-executing code that has already been deployed successfully in earlier releases.
+
+Without strong release tracking, there is a risk of re-running DDL, migration scripts, or other change logic.
+This can lead to deployment errors, duplicate changes, unintended schema modifications, or inconsistent environment state.
+
+This problem is especially important for:
+- DDL changes
+- migration scripts
+- schema evolution
+- ordered database changes
+- partial releases
+- re-runs after failed deployments
+
+The core challenge is that delta generation is not only a file comparison problem.
+It is also a deployment state problem.
+The pipeline must know:
+- which generated files belong to the current release
+- which files were already executed successfully
+- which files are new or changed
+- which files must run in a specific order
+- which files must never be executed twice
+
+Recommended solution:
+Use manifest-driven deployment combined with deployment history tracking and immutable release artifacts.
+
+1. Manifest-driven deployment
+Each VaultSpeed generation or release should produce a release manifest that defines exactly which files belong to the deployable release.
+The pipeline should deploy only the files listed in that manifest and ignore unrelated repository changes.
+
+The manifest should contain:
+- bundle ID
+- release version
+- included files
+- target platform
+- deployment order
+- file identifiers
+- optional checksums
+
+This ensures the pipeline deploys the intended release scope rather than relying on raw file changes alone.
+
+2. Deployment history table
+Maintain a deployment history table such as VS_DEPLOYMENT_HISTORY in the target environment or in a central deployment control database.
+
+Store at least:
+- bundle ID
+- release version
+- script or file ID
+- checksum
+- execution status
+- environment
+- timestamp
+
+This table is used to determine whether a file has already been executed successfully.
+It provides traceability, prevents accidental re-execution, and supports restart after failure.
+
+3. Checksum-based execution control
+Before executing a file, compare its checksum or unique file identity with the deployment history.
+If the same version of the file was already executed successfully in the target environment, skip it.
+If the checksum differs, treat it as a new deployable unit and evaluate it according to the manifest and release rules.
+
+This is especially useful when filenames remain stable but file contents change.
+
+4. Immutable release artifacts
+Once a release is created and approved, it should become immutable.
+Do not deploy loose files directly from changing branches.
+Instead, package the release into a fixed artifact and promote that same artifact across environments.
+
+This improves:
+- consistency
+- auditability
+- approval control
+- reproducibility
+
+5. Ordered execution
+Where possible, generated files should follow controlled sequence rules.
+Examples:
+- 001_tables.sql
+- 002_alters.sql
+- 003_views.sql
+
+Even when sequence numbering is used, execution should still be governed by the manifest and deployment history.
+Numbering helps with order, but it does not replace release tracking.
+
+6. Restart and failure handling
+If a deployment fails halfway, the pipeline must be able to resume safely.
+This requires checking which scripts were completed successfully and which were not.
+Do not restart the entire deployment blindly.
+Use the deployment history and manifest to resume from the correct point.
+
+7. Optional advanced control: environment state comparison
+For more mature implementations, compare the desired generated state with the actual deployed state before execution.
+This can help detect drift, unexpected manual changes, or missing objects.
+However, this should be used as an additional validation mechanism, not as the only source of truth.
+
+Preferred implementation pattern:
+- generate a release manifest for each VaultSpeed generation
+- package the release as an immutable deployment artifact
+- track executed files in a deployment history table
+- use checksum-based execution control to prevent re-running already applied code
+- execute files only in the manifest-defined order
+- support safe restart using recorded execution state
+
+Recommended approach:
+Treat delta deployment as a controlled release-tracking problem, not just a changed-files problem.
+The pipeline should deploy only approved manifest-defined release content and should use deployment history to prevent re-execution of already successful changes.

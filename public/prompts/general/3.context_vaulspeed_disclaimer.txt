@@ -1,0 +1,13 @@
+Not all context is relevant to every stack combination.
+
+Only apply context that is relevant to the selected stack.
+If a context item depends on a technology that is not part of the selected stack, ignore it.
+
+Examples:
+- if the context is about Git but the selected solution does not use Git, ignore that context and apply the problem to the selected stack
+- if the context is about Azure Data Factory but the selected orchestration is Airflow, ignore that context and apply the problem to the selected stack
+- if the context is about JDBC deployment but the selected deployment model does not use JDBC, ignore that context and apply the problem to the selected stack
+
+Always tailor the solution to the given stack combination and only use context that materially applies.
+
+Context also could contain more than 1 solution, apply the best one according to the stack and other context given.

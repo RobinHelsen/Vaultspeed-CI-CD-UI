@@ -1,17 +1,18 @@
-import { enterpriseProblems } from '../data/config'
+import { enterpriseConstraints, deliveryComplications } from '../data/config'
 
-export default function StackSearchResults({ results, selectedProblems }) {
+export default function StackSearchResults({ results, selectedProblems, onSelectStack }) {
   if (results.length === 0) {
     return (
       <div className="result-panel empty">
-        <p>Select at least one enterprise problem above to see ranked stack recommendations.</p>
+        <p>Select at least one constraint or complication above to see ranked stack recommendations.</p>
       </div>
     )
   }
 
   const maxScore = results[0].totalScore
+  const allOptions = [...enterpriseConstraints, ...deliveryComplications]
   const problemLabels = {}
-  for (const p of enterpriseProblems) {
+  for (const p of allOptions) {
     problemLabels[p.id] = p.label
   }
 
@@ -23,7 +24,14 @@ export default function StackSearchResults({ results, selectedProblems }) {
         const medal = `#${rank}`
 
         return (
-          <div key={idx} className={`stack-card ${rank <= 3 ? 'top-rank' : ''}`}>
+          <div
+            key={idx}
+            className={`stack-card clickable ${rank <= 3 ? 'top-rank' : ''}`}
+            onClick={() => onSelectStack && onSelectStack(r)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && onSelectStack && onSelectStack(r)}
+          >
             <div className="stack-card-header">
               <span className="stack-rank">{medal}</span>
               <div className="stack-name">

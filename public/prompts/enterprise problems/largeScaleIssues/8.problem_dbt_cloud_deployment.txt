@@ -1,0 +1,97 @@
+dbt Cloud deployment complexity.
+
+Deploying generated dbt-related assets to dbt Cloud is a special case that needs a structured design.
+It is not just a standard database deployment and may require integration with dbt Cloud-specific job, environment, repository, and API patterns.
+
+Customers need a clear deployment approach for how code is promoted, triggered, and managed within dbt Cloud.
+This should be treated as a dedicated CI/CD scenario.
+
+This problem is especially relevant when:
+- dbt Cloud is used as the execution platform for transformation logic
+- deployment is based on dbt project structure rather than direct SQL execution
+- repository synchronization and environment configuration are part of the release flow
+- runs must be triggered and monitored through dbt Cloud jobs
+- governance differs from standard database deployment
+- some environments allow dbt Cloud while others require dbt Core or direct deployment
+
+The core issue is that dbt Cloud is not a normal SQL deployment target.
+The pipeline should not treat dbt Cloud deployment as simply pushing SQL files to a database.
+Instead, it must manage dbt project packaging, repository integration, environment configuration, job triggering, and run monitoring in a structured way.
+
+Recommended solution:
+Treat dbt Cloud as its own deployment target with a dedicated deployment mode, dedicated metadata, and a dedicated pipeline flow.
+
+1. Separate dbt Cloud deployment mode
+dbt Cloud should be handled as a distinct deployment scenario, separate from standard database deployment.
+The pipeline should recognize when the target is dbt Cloud and switch to a dbt-specific deployment flow rather than a direct SQL execution flow.
+
+2. dbt project packaging
+Generated dbt-related output should be packaged in a structure that is directly usable as a dbt project.
+This may include:
+- models
+- macros
+- seeds
+- snapshots
+- project configuration
+- environment-specific settings
+
+The packaging structure should be consistent and ready for repository-based deployment.
+
+3. dbt Cloud adapter flow
+Use a standard deployment pattern for dbt Cloud that includes:
+- package generation
+- repository sync or repository update
+- environment selection
+- job trigger
+- run monitoring
+- status reporting back to the pipeline
+
+This gives customers a predictable and repeatable way to deploy dbt-related assets.
+
+4. Job-based execution
+Instead of deploying SQL directly to the database, the pipeline should typically trigger dbt Cloud jobs.
+This makes dbt Cloud the execution layer and keeps deployment aligned with how dbt Cloud is designed to operate.
+
+5. dbt-specific release metadata
+Release metadata should include dbt-specific information where relevant, such as:
+- dbt project identifier
+- target environment
+- job identifier
+- model scope
+- dependency scope
+- repository or package version
+
+This improves traceability and makes promotion across environments easier to control.
+
+6. Separate governance path
+dbt Cloud deployment should have its own governance and operational model.
+Do not assume that direct database deployment standards apply unchanged.
+Approval flow, secrets handling, runtime ownership, and execution monitoring may need to follow a different pattern.
+
+7. Monitoring and run feedback
+The pipeline should monitor dbt Cloud job execution and capture:
+- job start
+- job completion
+- run status
+- failure details
+- relevant links or references for investigation
+
+This is important because deployment success depends not only on code promotion, but also on successful execution within dbt Cloud.
+
+8. dbt Core alternative where needed
+In some enterprises, dbt Cloud may not be allowed or may not be available in all environments.
+In those cases, support a dbt Core deployment pattern as an alternative.
+This should still be treated as a dbt-specific path, separate from direct raw SQL deployment.
+
+Preferred implementation pattern:
+- treat dbt Cloud as a separate deployment target
+- package generated output in dbt project format
+- use a dedicated dbt Cloud deployment flow
+- trigger and monitor dbt Cloud jobs from the pipeline
+- include dbt-specific metadata in the release definition
+- apply separate governance rules for dbt deployment
+- support dbt Core as an alternative where required
+
+Recommended approach:
+Treat dbt Cloud deployment as a dedicated CI/CD scenario, not as a normal SQL deployment.
+Use a dbt-specific packaging, promotion, trigger, and monitoring flow so code can be promoted and executed in a controlled and supportable way.

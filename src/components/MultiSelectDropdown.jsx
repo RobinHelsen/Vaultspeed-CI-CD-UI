@@ -22,10 +22,10 @@ export default function MultiSelectDropdown({ label, options, selected, onChange
 
   const summary =
     selected.length === 0
-      ? 'Select problems…'
+      ? 'Select items…'
       : selected.length === 1
         ? options.find((o) => o.id === selected[0])?.label
-        : `${selected.length} problems selected`
+        : `${selected.length} items selected`
 
   return (
     <div className="dropdown multi-dropdown" ref={ref}>

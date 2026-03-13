@@ -1,0 +1,89 @@
+No hooks for custom code.
+
+VaultSpeed does not natively provide standard pre-deployment or post-deployment hook events for customer-specific logic.
+This means custom actions usually need to be implemented outside the default generated delivery flow.
+
+Customers must extend the deployment pipeline themselves if they want additional validation, configuration steps, notifications, or custom runtime actions before or after deployment.
+
+This problem is especially relevant when customers need:
+- extra validation before deployment
+- custom configuration steps
+- environment preparation
+- notifications or approval-related actions
+- post-deployment checks
+- operational callbacks on failure or success
+- customer-specific logic that is not part of the standard VaultSpeed-generated output
+
+The core issue is that VaultSpeed-generated delivery focuses on generated artifacts, but many enterprise deployments also require controlled extension points.
+Without standard hook points, customers may add custom logic in inconsistent ways, which can reduce maintainability, traceability, and control.
+
+Recommended solution:
+Use standardized hook definitions in the release manifest combined with fixed insertion points in the deployment pipeline.
+
+1. Manifest-based hook definitions
+Extend the release manifest to support optional hook sections such as:
+- pre_deploy
+- post_deploy
+- on_failure
+
+These sections should define which custom actions are allowed to run, when they run, and under which conditions.
+This makes custom logic explicit, versioned, and traceable as part of the release design.
+
+2. Standard pipeline insertion points
+Provide fixed insertion points in the pipeline templates where custom logic can be executed.
+Typical insertion points include:
+- before release
+- before stage
+- after stage
+- after successful deployment
+- on deployment failure
+
+This gives customers a predictable extension model instead of ad hoc custom changes.
+
+3. Controlled hook model
+Do not treat hooks as unrestricted arbitrary scripting by default.
+Prefer a controlled model where hooks are defined through approved script locations, predefined handler types, or governed configuration.
+This reduces security and governance risks.
+
+4. Standard hook folders or locations
+Where file-based hooks are used, define standard locations such as:
+- /hooks/pre
+- /hooks/post
+- /hooks/failure
+
+This helps keep custom logic organized and makes it easier for the pipeline to discover and execute the correct hook content.
+
+5. Environment-specific hook support
+Hooks may differ by environment.
+Support environment-specific behavior for development, test, and production where required.
+This is useful when certain checks, approvals, notifications, or operational actions only apply in higher environments.
+
+6. Approval and governance controls
+Because custom logic can introduce operational or security risk, hook execution should be governed.
+Examples:
+- allow hooks only from approved branches
+- allow hooks only in approved release pipelines
+- require approval before running production hooks
+- restrict which teams may modify hook definitions
+
+7. Event-based callback pattern
+For more advanced implementations, treat hook execution as event-driven deployment callbacks.
+Useful events include:
+- before release
+- before stage
+- after stage
+- on success
+- on failure
+
+This makes the extension model clearer and easier to standardize across multiple pipelines.
+
+Preferred implementation pattern:
+- define optional pre_deploy, post_deploy, and on_failure sections in the release manifest
+- provide standard insertion points in pipeline templates
+- store custom logic in controlled hook locations
+- support environment-specific hook behavior where needed
+- apply approval and governance controls for custom hook execution
+
+Recommended approach:
+Treat custom deployment logic as a governed extension model, not as ad hoc pipeline customization.
+Use standardized hook definitions, fixed execution points, and controlled approval rules so customer-specific actions can be added safely and consistently.

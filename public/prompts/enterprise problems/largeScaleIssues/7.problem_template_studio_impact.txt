@@ -1,0 +1,89 @@
+Template Studio impact.
+
+Upcoming or evolving Template Studio capabilities may affect recommended CI/CD patterns.
+Changes in how assets are generated, structured, or customized can influence packaging, deployment flow, and pipeline design.
+
+This should be considered in the solution design so that the CI/CD approach remains compatible with future product evolution.
+
+This problem is especially relevant when:
+- generated output structure may change over time
+- file naming or folder layout may evolve
+- new asset types may be introduced
+- customization options may alter generated content
+- deployment logic currently depends on folder names or fixed file locations
+- customers want a CI/CD design that remains stable across product evolution
+
+The core issue is that CI/CD designs can become too tightly coupled to the current generated output format.
+If pipelines rely on hardcoded folder structures, file naming conventions, or generation-specific assumptions, future Template Studio changes may require pipeline redesign.
+This creates maintenance risk and makes the deployment approach less resilient.
+
+Recommended solution:
+Use a stable deployment contract based on metadata-driven deployment, versioned manifest schemas, and template-version-aware compatibility handling.
+
+1. Stable deployment contract
+Define a fixed deployment interface that remains stable even if the generated output structure changes.
+The pipeline should consume a standardized deployment contract rather than relying directly on raw folder layout or generated file naming patterns.
+
+This contract should describe:
+- what must be deployed
+- in which order
+- for which target
+- under which deployment mode
+- with which metadata and dependencies
+
+2. Metadata-driven deployment
+Pipelines should use manifest metadata rather than hardcoded assumptions about filenames, directory structures, or current output layout.
+This allows the deployment process to remain stable even if Template Studio changes the way files are physically generated.
+
+The manifest or deployment metadata should be the source of truth for:
+- included assets
+- classification
+- deployment order
+- dependencies
+- target-specific behavior
+- optional features
+
+3. Versioned manifest schema
+Support versioned deployment metadata such as:
+- v1
+- v2
+- v3
+
+This allows deployment logic to evolve in a controlled way without breaking older releases or existing customer pipelines.
+The pipeline should recognize the manifest schema version and apply the correct processing logic.
+
+4. Template-version-aware pipelines
+Pipelines should detect or receive the relevant template or generation version and adapt behavior accordingly.
+This is especially useful during transition periods where older output and newer Template Studio output may both exist.
+
+The pipeline should not assume one permanent output format.
+
+5. Compatibility layer
+During transition periods, support both the current output model and the newer Template Studio output model through a compatibility layer.
+This reduces migration risk and allows customers to adopt newer generation capabilities without rewriting the entire CI/CD implementation immediately.
+
+6. Separate generation logic from deployment logic
+Keep internal generation structure separate from deployment execution logic.
+Deployment should consume standardized metadata and deployment contracts, not product-internal output assumptions.
+
+This is one of the most important design rules.
+The more the deployment pipeline depends on standardized metadata instead of raw generated format, the more resilient it will be to future Template Studio changes.
+
+7. Output classification and structured metadata
+Where possible, use structured output metadata that explicitly describes asset types, deployment phases, dependencies, and execution requirements.
+If richer metadata becomes available, prefer that over inference from filenames or folders.
+
+This reduces fragility and makes future extension easier.
+
+Preferred implementation pattern:
+- define a stable deployment contract
+- drive deployment through manifest metadata
+- support versioned manifest schemas
+- make pipelines aware of template or generation version
+- use a compatibility layer during transition periods
+- separate raw generation structure from deployment logic
+- prefer structured metadata over file-system assumptions
+
+Recommended approach:
+Design the CI/CD solution so it depends on stable deployment metadata rather than the current generated folder structure.
+Treat Template Studio evolution as an expected change and build the pipeline around versioned contracts and compatibility handling so the deployment design remains maintainable over time.

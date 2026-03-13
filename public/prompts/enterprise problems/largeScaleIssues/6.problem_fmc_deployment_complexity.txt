@@ -1,0 +1,117 @@
+FMC deployment complexity.
+
+FMC deployment depends on the selected target technology and orchestration setup.
+It often requires its own deployment logic, configuration handling, and environment-specific setup.
+
+Because FMC is not always deployed in the same way as database code, customers may need a separate deployment pattern for flow logic and orchestration assets.
+This increases CI/CD design complexity.
+
+This problem is especially relevant when:
+- FMC is deployed to different orchestration targets
+- database deployment and orchestration deployment follow different runtime models
+- environment-specific configuration is needed
+- flow logic must be promoted separately from core database objects
+- some targets support FMC differently than others
+- manual steps are required for certain platforms or orchestration patterns
+
+The core issue is that FMC should not be treated as just another SQL deployment artifact.
+Its deployment model depends on the orchestration target, the selected platform, and the way runtime configuration is managed.
+Because of that, FMC often needs its own deployment path alongside the database deployment flow.
+
+Recommended solution:
+Use a separate FMC deployment stage combined with a standard FMC package structure, FMC-specific manifest metadata, and target-specific adapter logic.
+
+1. Separate FMC deployment stage
+Deploy FMC separately from core DDL and ETL deployment.
+This makes the pipeline easier to control and avoids mixing database object deployment with orchestration asset deployment.
+
+A typical deployment flow is:
+- deploy core database objects
+- deploy ETL or transformation logic
+- deploy FMC assets
+- apply orchestration-specific configuration
+- validate flow execution readiness
+
+This ensures FMC is only deployed after the required runtime objects already exist.
+
+2. FMC adapter layer
+Use one common FMC deployment interface, but implement it differently for each target technology.
+This creates a consistent pipeline design while still allowing target-specific deployment behavior.
+
+The pipeline should treat FMC deployment as one logical step, but internally route it through the correct target-specific implementation.
+
+3. Standard FMC package structure
+Define a fixed package structure for FMC deployment assets regardless of target.
+This makes packaging, promotion, and validation more consistent across environments.
+
+A standard FMC package may include:
+- flow definitions
+- runtime configuration
+- environment parameters
+- orchestration metadata
+- deployment instructions
+- target-specific supporting files
+
+A consistent package model reduces ambiguity and makes automation easier.
+
+4. FMC manifest section
+Add an FMC-specific section to the release manifest.
+This section should define:
+- whether FMC is included in the release
+- FMC target technology
+- deployment mode
+- required configuration
+- dependent runtime objects or stages
+- target-specific metadata where needed
+
+This helps the pipeline understand when FMC must be deployed and how it should be handled.
+
+5. Target-specific FMC templates
+Provide separate deployment templates for each supported FMC target.
+This is needed because not every platform deploys or manages orchestration assets in the same way.
+
+The pipeline should not assume one universal FMC deployment method.
+Instead, it should apply the correct template for the selected target.
+
+6. FMC capability matrix
+Maintain a capability matrix per target platform that clearly defines:
+- supported
+- partially supported
+- unsupported
+- manual steps required
+
+This helps the solution explain when FMC deployment can be fully automated and when customer-specific handling is needed.
+
+7. Optional FMC deployment mode
+Make FMC deployment a separate selectable pipeline option where appropriate.
+This is useful when:
+- FMC is deployed by another team
+- FMC promotion follows a different release cadence
+- FMC is not required for every release
+- only database code is being promoted
+
+This keeps the CI/CD design flexible without losing control.
+
+8. Environment-specific FMC configuration
+FMC deployment often requires environment-specific settings.
+These may include:
+- connection settings
+- execution parameters
+- orchestration environment identifiers
+- scheduling-related configuration
+- runtime integration details
+
+The pipeline should treat these as controlled configuration inputs rather than hardcoded deployment content.
+
+Preferred implementation pattern:
+- use a separate FMC deployment stage
+- package FMC assets in a standard structure
+- include FMC-specific metadata in the release manifest
+- deploy FMC through a target-specific adapter or template
+- maintain a capability matrix for supported platforms
+- allow FMC deployment to be enabled separately where needed
+- manage environment-specific FMC settings through controlled configuration
+
+Recommended approach:
+Treat FMC deployment as a dedicated orchestration deployment pattern, not as ordinary database code deployment.
+Use a separate stage, standard packaging, and target-specific deployment logic so FMC can be promoted and configured in a controlled and supportable way.

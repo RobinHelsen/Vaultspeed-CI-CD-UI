@@ -1,0 +1,31 @@
+No logical bundle awareness.
+
+Multiple generated files can belong to the same VaultSpeed generation bundle, but Git does not inherently understand that relationship.
+This makes it harder to promote, review, or deploy all related files together as one controlled release unit.
+
+Because VaultSpeed does not enforce bundle grouping at Git level, customers must define their own packaging, release tagging, or manifest strategy.
+This becomes more difficult in enterprises where squash commits or simplified merge strategies are restricted by policy.
+
+To solve this, use a release manifest or release descriptor as the primary grouping mechanism.
+Each VaultSpeed generation should be represented by one manifest file that defines the logical release bundle.
+
+The manifest should contain:
+- bundle ID
+- release version
+- included files
+- target platform
+- deployment order
+
+The CI/CD pipeline should deploy based on the manifest, not based on raw file changes alone.
+This ensures that all related files are promoted and deployed together as one controlled release unit.
+
+To strengthen this approach:
+- package each generation bundle into one release artifact
+- promote that packaged artifact to higher environments
+- add pull request validation to detect and prevent mixed bundles in one change set
+
+If possible, reuse a shared release key across generated files, 
+such as a bundle ID or release version, so files can be traced back to the same VaultSpeed generation.
+
+Recommended approach:
+Treat each VaultSpeed generation as one deployable release bundle, defined by a manifest and promoted as a single packaged artifact.

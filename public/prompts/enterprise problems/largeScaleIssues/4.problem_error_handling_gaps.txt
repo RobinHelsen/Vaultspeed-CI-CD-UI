@@ -1,0 +1,138 @@
+Error handling gaps.
+
+If a deployment pipeline fails halfway through execution, there may be no default mechanism to prevent incorrect re-execution of earlier steps.
+Without standardized state tracking or execution manifests, the pipeline may not know exactly what succeeded and what failed.
+
+Idempotency is not guaranteed by default.
+Customers may need to design their own restart, recovery, and deployment state management approach.
+
+This problem is especially important for:
+- ordered deployments
+- delta releases
+- DDL and migration scripts
+- multi-step deployments across database and orchestration layers
+- reruns after partial failure
+- production releases where manual recovery is risky
+
+The core issue is that a failed deployment is not only an execution problem.
+It is also a state management problem.
+The pipeline must be able to determine:
+- which steps were not started
+- which steps started but did not complete
+- which steps completed successfully
+- which steps may be retried safely
+- which steps must never be re-executed without manual review
+
+Recommended solution:
+Use persistent step-level execution tracking combined with resume control, failure reporting, idempotency rules, and bundle-level deployment locking.
+
+1. Per-step execution status tracking
+Track each deployment step using clear execution states such as:
+- pending
+- started
+- succeeded
+- failed
+- skipped
+
+Each tracked step should be linked to:
+- bundle ID
+- release version
+- environment
+- step name or file ID
+- execution timestamp
+- checksum or script identity where useful
+
+This creates a reliable execution record and makes restart decisions possible.
+
+2. Persistent deployment state store
+Execution state must be stored outside the temporary runtime of the pipeline.
+Possible state stores include:
+- a target database table
+- a central deployment control database
+- an artifact store
+- a storage account or bucket
+- a metadata file attached to the release artifact
+
+The preferred approach is a persistent deployment state table because it supports auditability, restart, and release tracking across reruns.
+
+3. Resume-from-last-successful-step
+Pipeline reruns should not restart blindly from the beginning.
+Instead, the pipeline should resume from the last confirmed successful step or from the first incomplete step, based on stored execution state.
+
+This reduces the risk of:
+- rerunning completed DDL
+- reapplying migrations
+- duplicating changes
+- creating inconsistent deployment results
+
+4. Idempotency rules per artifact type
+Not every deployment artifact should be handled the same way.
+Define explicit idempotency rules by artifact type.
+
+Examples:
+- some validation steps may be rerun safely
+- some CREATE OR REPLACE logic may be rerun safely depending on the platform
+- migrations and one-time DDL changes may not be safe to rerun
+- orchestration registration steps may need separate retry logic
+
+The pipeline should know which step types:
+- may be retried automatically
+- may be skipped if already successful
+- require manual review before rerun
+
+5. Failure manifest
+When a deployment fails, generate a failure manifest or structured failure report that contains:
+- bundle ID
+- release version
+- environment
+- completed steps
+- failed step
+- remaining steps
+- failure timestamp
+- relevant execution metadata
+
+This makes support and recovery easier and gives operators a precise record of what happened.
+
+6. Bundle-level deployment lock
+Prevent the same release bundle from being executed more than once at the same time.
+Use a deployment lock so that concurrent runs for the same bundle and environment are blocked.
+
+This avoids:
+- duplicate execution
+- race conditions
+- conflicting state updates
+- inconsistent release outcomes
+
+7. Rollback support where possible
+Rollback should only be used where the platform and artifact type support it safely.
+Do not assume rollback is always available.
+
+In many cases, the safer approach is:
+- stop execution
+- record exact deployment state
+- fix the issue
+- resume or roll forward in a controlled way
+
+Rollback should therefore be selective, not universal.
+
+8. Restart and recovery design
+Recovery should be based on recorded deployment state, not on guesswork.
+The pipeline should support:
+- safe rerun of failed releases
+- restart from the correct step
+- manual override when required
+- operator visibility into what succeeded and what failed
+
+Preferred implementation pattern:
+- track every deployment step with persistent status
+- store execution state in a durable deployment state store
+- support resume from the last successful or first incomplete step
+- define idempotency rules per artifact type
+- generate a failure manifest after unsuccessful runs
+- prevent concurrent execution of the same release bundle
+- use rollback only where safe and supported
+
+Recommended approach:
+Treat deployment failure handling as a controlled state-tracking problem.
+Do not rely on blind reruns.
+Use persistent execution tracking, controlled restart logic, and explicit retry rules to ensure failed deployments can be recovered safely and predictably.
