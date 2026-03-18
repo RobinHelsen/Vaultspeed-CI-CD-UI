@@ -6,7 +6,7 @@ import ExtraInfoInput from './components/ExtraInfoInput'
 import GeneratedGuide from './components/GeneratedGuide'
 import StackSearchResults from './components/StackSearchResults'
 import { dataPlatforms, cicdTools, orchestrationTools, enterpriseConstraints, deliveryComplications, enforcedStack, largeScaleIssues } from './data/config'
-import { resolveStackRankings } from './data/stackResolver'
+import { resolveStackRankings, getEnforcedFeasibilityError } from './data/stackResolver'
 import { generateGuide } from './data/promptBuilder'
 
 export default function App() {
@@ -25,13 +25,19 @@ export default function App() {
   const [guideLoading, setGuideLoading] = useState(false)
   const [guideError, setGuideError] = useState('')
 
-  // Merge both checkbox groups for the stack ranker
-  const allSelected = useMemo(() => [...constraints, ...complications], [constraints, complications])
+  // Merge selected issue groups used by the stack ranker
+  const allSelected = useMemo(() => [...largeScale, ...constraints, ...complications], [largeScale, constraints, complications])
+
+  const enforcedError = useMemo(() => getEnforcedFeasibilityError(enforced), [enforced])
+  const hasAnySearchFilter = useMemo(
+    () => enforced.length > 0 || allSelected.length > 0,
+    [enforced, allSelected]
+  )
 
   // "Find best stack" results (rankings are still hardcoded)
   const stackResults = useMemo(
-    () => resolveStackRankings(allSelected),
-    [allSelected]
+    () => (enforcedError ? [] : resolveStackRankings(allSelected, enforced)),
+    [allSelected, enforced, enforcedError]
   )
 
   const isComplete = dataPlatform && cicdTool && orchestrationTool
@@ -82,22 +88,6 @@ export default function App() {
     }
   }, [dataPlatform, cicdTool, orchestrationTool, constraints, complications, enforced, largeScale, extraInfo])
 
-  // Called when user clicks a stack card in "Find best stack" mode
-  function handleStackSelect(stack) {
-    setDataPlatform(stack.dataPlatform)
-    setCicdTool(stack.cicdTool)
-    setOrchestrationTool(stack.orchestrationTool)
-
-    callGenerateGuide({
-      dataPlatform: stack.dataPlatform,
-      cicdTool: stack.cicdTool,
-      orchestrationTool: stack.orchestrationTool,
-      constraints,
-      complications,
-      largeScale,
-    })
-  }
-
   return (
     <div className="app">
       <header className="app-header">
@@ -145,17 +135,7 @@ export default function App() {
             </section>
 
             <section className="selector-section">
-              <h2>2. Enforced Stack</h2>
-              <MultiSelectDropdown
-                label="Select any enforced stack requirements"
-                options={enforcedStack}
-                selected={enforced}
-                onChange={setEnforced}
-              />
-            </section>
-
-            <section className="selector-section">
-              <h2>3. Large-Scale Issues</h2>
+              <h2>2. Large-Scale Issues</h2>
               <MultiSelectDropdown
                 label="Select the large-scale issues that apply"
                 options={largeScaleIssues}
@@ -165,7 +145,7 @@ export default function App() {
             </section>
 
             <section className="selector-section">
-              <h2>4. Enterprise Constraints</h2>
+              <h2>3. Enterprise Constraints</h2>
               <MultiSelectDropdown
                 label="Select the constraints that apply"
                 options={enterpriseConstraints}
@@ -175,7 +155,7 @@ export default function App() {
             </section>
 
             <section className="selector-section">
-              <h2>5. Delivery Complications</h2>
+              <h2>4. Delivery Complications</h2>
               <MultiSelectDropdown
                 label="Select the complications that apply"
                 options={deliveryComplications}
@@ -185,7 +165,7 @@ export default function App() {
             </section>
 
             <section className="selector-section">
-              <h2>6. Other Relevant Context</h2>
+              <h2>5. Other Relevant Context</h2>
               <ExtraInfoInput value={extraInfo} onChange={setExtraInfo} />
             </section>
 
@@ -222,7 +202,7 @@ export default function App() {
         {mode === 'search' && (
           <>
             <section className="selector-section">
-              <h2>1. Enforced Stack</h2>
+              <h2>1. Enforced Stack Parts</h2>
               <MultiSelectDropdown
                 label="Select any enforced stack requirements"
                 options={enforcedStack}
@@ -261,28 +241,15 @@ export default function App() {
               />
             </section>
 
-            <section className="selector-section">
-              <h2>5. Other Relevant Context</h2>
-              <ExtraInfoInput value={extraInfo} onChange={setExtraInfo} />
-            </section>
-
             <section className="result-section">
               <h2>Recommended Stacks (Best &rarr; Worst)</h2>
-              <p className="hint-text">Click a stack to generate its CI/CD setup guide.</p>
+              <p className="hint-text">Use these results to decide your stack, then switch to "I know my stack" to generate the guide.</p>
               <StackSearchResults
                 results={stackResults}
                 selectedProblems={allSelected}
-                onSelectStack={handleStackSelect}
+                emptyMessage={enforcedError || (!hasAnySearchFilter ? 'Select at least one filter to see stack recommendations.' : '')}
               />
             </section>
-
-            {/* Show generated guide below the stack list once a stack is clicked */}
-            {(guideContent || guideLoading || guideError) && (
-              <section className="result-section">
-                <h2>Generated CI/CD Setup Guide</h2>
-                <GeneratedGuide content={guideContent} loading={guideLoading} error={guideError} />
-              </section>
-            )}
           </>
         )}
       </main>
