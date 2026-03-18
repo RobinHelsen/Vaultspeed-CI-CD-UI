@@ -1,0 +1,4 @@
+Shared platform with naming conflicts.
+
+Multiple projects or teams share the same data platform instance.
+Object naming conflicts are possible and must be mitigated through namespacing, schemas, or naming conventions.

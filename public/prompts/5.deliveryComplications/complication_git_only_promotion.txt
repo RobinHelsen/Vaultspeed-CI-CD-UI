@@ -1,0 +1,4 @@
+Git-only promotion required.
+
+All promotions between environments must happen through Git (e.g., merge-based promotion).
+No out-of-band deployments or direct pushes to higher environments are allowed.

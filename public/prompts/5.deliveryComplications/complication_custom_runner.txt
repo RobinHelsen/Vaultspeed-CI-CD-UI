@@ -1,0 +1,4 @@
+Custom deployment runner required.
+
+A custom or self-hosted runner is required for executing CI/CD pipelines.
+The solution must account for runner provisioning, network access, and tooling availability on the custom runner.

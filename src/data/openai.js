@@ -1,6 +1,6 @@
 /**
  * ======================================================================
- * OpenAI API Service
+ * Anthropic API Service
  * ======================================================================
  *
  * Assembles one big prompt by concatenating:
@@ -106,9 +106,9 @@ function buildPrompt({ context, rules, dataPlatform, cicdTool, orchestrationTool
  * @returns {Promise<string>}                 — the generated guide (markdown string)
  */
 export async function generateGuide({ dataPlatform, cicdTool, orchestrationTool, constraints, complications, enforced, largeScale, extraInfo }) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
   if (!apiKey || apiKey === 'your-api-key-here') {
-    throw new Error('Please set your OpenAI API key in the .env file (VITE_OPENAI_API_KEY).')
+    throw new Error('Please set your Anthropic API key in the .env file (VITE_ANTHROPIC_API_KEY).')
   }
 
   const { context, rules } = await loadPromptFiles()
@@ -119,27 +119,27 @@ export async function generateGuide({ dataPlatform, cicdTool, orchestrationTool,
     constraints, complications, enforced, largeScale, extraInfo,
   })
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 4000,
       messages: [
         { role: 'user', content: prompt },
       ],
-      temperature: 0.4,
-      max_tokens: 4000,
     }),
   })
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
-    throw new Error(err.error?.message || `OpenAI API error: ${response.status} ${response.statusText}`)
+    throw new Error(err.error?.message || `Anthropic API error: ${response.status} ${response.statusText}`)
   }
 
   const data = await response.json()
-  return data.choices?.[0]?.message?.content || 'No response generated.'
+  return data.content?.[0]?.text || 'No response generated.'
 }

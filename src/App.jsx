@@ -7,7 +7,7 @@ import GeneratedGuide from './components/GeneratedGuide'
 import StackSearchResults from './components/StackSearchResults'
 import { dataPlatforms, cicdTools, orchestrationTools, enterpriseConstraints, deliveryComplications, enforcedStack, largeScaleIssues } from './data/config'
 import { resolveStackRankings } from './data/stackResolver'
-import { generateGuide } from './data/openai'
+import { generateGuide } from './data/promptBuilder'
 
 export default function App() {
   const [mode, setMode] = useState('') // '' | 'known' | 'search'
@@ -50,38 +50,28 @@ export default function App() {
     setGuideError('')
   }
 
-  // Shared function to call OpenAI — used by both flows
+  // Shared function to call the prompt builder + Anthropic API — used by both flows
   const callGenerateGuide = useCallback(async (overrides = {}) => {
     const dp = overrides.dataPlatform || dataPlatform
     const ci = overrides.cicdTool || cicdTool
     const orch = overrides.orchestrationTool || orchestrationTool
     const cons = overrides.constraints || constraints
     const comps = overrides.complications || complications
-    const enf = overrides.enforced || enforced
     const ls = overrides.largeScale || largeScale
-
-    // Resolve labels for the prompt
-    const dpLabel = dataPlatforms.find((o) => o.value === dp)?.label || dp
-    const ciLabel = cicdTools.find((o) => o.value === ci)?.label || ci
-    const orchLabel = orchestrationTools.find((o) => o.value === orch)?.label || orch
-    const constraintLabels = cons.map((id) => enterpriseConstraints.find((c) => c.id === id)?.label || id)
-    const complicationLabels = comps.map((id) => deliveryComplications.find((c) => c.id === id)?.label || id)
-    const enforcedLabels = enf.map((id) => enforcedStack.find((c) => c.id === id)?.label || id)
-    const largeScaleLabels = ls.map((id) => largeScaleIssues.find((c) => c.id === id)?.label || id)
 
     setGuideContent('')
     setGuideError('')
     setGuideLoading(true)
 
     try {
+      // Pass dropdown values (used for stack file lookup) and IDs (used for prompt file lookup)
       const content = await generateGuide({
-        dataPlatform: dpLabel,
-        cicdTool: ciLabel,
-        orchestrationTool: orchLabel,
-        constraints: constraintLabels,
-        complications: complicationLabels,
-        enforced: enforcedLabels,
-        largeScale: largeScaleLabels,
+        dataPlatform: dp,
+        cicdTool: ci,
+        orchestrationTool: orch,
+        constraints: cons,
+        complications: comps,
+        largeScale: ls,
         extraInfo: overrides.extraInfo ?? extraInfo,
       })
       setGuideContent(content)
@@ -104,7 +94,6 @@ export default function App() {
       orchestrationTool: stack.orchestrationTool,
       constraints,
       complications,
-      enforced,
       largeScale,
     })
   }

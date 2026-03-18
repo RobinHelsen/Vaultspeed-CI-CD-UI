@@ -1,0 +1,5 @@
+Different team owns orchestration.
+
+The orchestration layer is managed by a separate team.
+This means the CI/CD pipeline cannot directly deploy or configure orchestration jobs.
+The solution must account for handoff points, shared contracts, and coordination between teams.

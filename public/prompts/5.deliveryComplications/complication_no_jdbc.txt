@@ -1,0 +1,4 @@
+No direct JDBC deployment allowed.
+
+Direct JDBC connections to the target database are not permitted.
+Deployment must use alternative methods such as native CLI tools, REST APIs, or platform-specific deployment mechanisms.

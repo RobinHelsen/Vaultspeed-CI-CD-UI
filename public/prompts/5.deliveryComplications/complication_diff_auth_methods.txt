@@ -1,0 +1,4 @@
+Multiple environments with different authentication methods.
+
+Different deployment environments use different authentication mechanisms (e.g., service principals, key vaults, IAM roles).
+The pipeline must be flexible enough to handle varying credential types across environments.
