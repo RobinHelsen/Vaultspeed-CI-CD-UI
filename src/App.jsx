@@ -5,7 +5,7 @@ import MultiSelectDropdown from './components/MultiSelectDropdown'
 import ExtraInfoInput from './components/ExtraInfoInput'
 import GeneratedGuide from './components/GeneratedGuide'
 import StackSearchResults from './components/StackSearchResults'
-import { dataPlatforms, cicdTools, orchestrationTools, enterpriseConstraints, deliveryComplications, enforcedStack, largeScaleIssues } from './data/config'
+import { dataPlatforms, cicdTools, orchestrationTools, enterpriseConstraints, deliveryComplications, enforcedStack, largeScaleIssues, performancePriorities } from './data/config'
 import { resolveStackRankings, getEnforcedFeasibilityError } from './data/stackResolver'
 import { generateGuide } from './data/promptBuilder'
 
@@ -17,6 +17,7 @@ export default function App() {
   const [constraints, setConstraints] = useState([])
   const [complications, setComplications] = useState([])
   const [enforced, setEnforced] = useState([])
+  const [performanceNeeds, setPerformanceNeeds] = useState([])
   const [largeScale, setLargeScale] = useState([])
   const [extraInfo, setExtraInfo] = useState('')
 
@@ -30,14 +31,14 @@ export default function App() {
 
   const enforcedError = useMemo(() => getEnforcedFeasibilityError(enforced), [enforced])
   const hasAnySearchFilter = useMemo(
-    () => enforced.length > 0 || allSelected.length > 0,
-    [enforced, allSelected]
+    () => enforced.length > 0 || allSelected.length > 0 || performanceNeeds.length > 0,
+    [enforced, allSelected, performanceNeeds]
   )
 
   // "Find best stack" results (rankings are still hardcoded)
   const stackResults = useMemo(
-    () => (enforcedError ? [] : resolveStackRankings(allSelected, enforced)),
-    [allSelected, enforced, enforcedError]
+    () => (enforcedError ? [] : resolveStackRankings(allSelected, enforced, performanceNeeds)),
+    [allSelected, enforced, performanceNeeds, enforcedError]
   )
 
   const isComplete = dataPlatform && cicdTool && orchestrationTool
@@ -50,6 +51,7 @@ export default function App() {
     setConstraints([])
     setComplications([])
     setEnforced([])
+    setPerformanceNeeds([])
     setLargeScale([])
     setExtraInfo('')
     setGuideContent('')
@@ -238,6 +240,16 @@ export default function App() {
                 options={deliveryComplications}
                 selected={complications}
                 onChange={setComplications}
+              />
+            </section>
+
+            <section className="selector-section">
+              <h2>5. Performance Priorities</h2>
+              <MultiSelectDropdown
+                label="Select performance priorities for stack filtering"
+                options={performancePriorities}
+                selected={performanceNeeds}
+                onChange={setPerformanceNeeds}
               />
             </section>
 

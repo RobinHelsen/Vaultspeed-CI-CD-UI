@@ -9,7 +9,7 @@
  * Returns an array of { stack, totalScore, avgScore, breakdown }.
  */
 
-import { stackRankings, dataPlatforms, cicdTools, orchestrationTools, enforcedStack, stackContextKeys } from './config'
+import { stackRankings, dataPlatforms, cicdTools, orchestrationTools, enforcedStack, stackContextKeys, stackPerformanceCapabilitiesByCombo } from './config'
 
 function getLabel(options, value) {
   return options.find((o) => o.value === value)?.label ?? value
@@ -61,6 +61,12 @@ function matchesEnforcedParts(stack, enforcedIds) {
   return rules.every((rule) => stack[rule.part] === rule.value)
 }
 
+function matchesPerformanceNeeds(stack, performanceNeeds) {
+  if (!performanceNeeds || performanceNeeds.length === 0) return true
+  const capabilities = stackPerformanceCapabilitiesByCombo[stackKey(stack)] || {}
+  return performanceNeeds.every((needId) => capabilities[needId] === true)
+}
+
 function hasFeasibleEnforcedCombination(enforcedIds) {
   if (!enforcedIds || enforcedIds.length === 0) return true
   const rules = getEnforcedRules(enforcedIds)
@@ -79,9 +85,12 @@ export function getEnforcedFeasibilityError(enforcedIds = []) {
   return `No feasible stack context file exists for this enforced combination (${selected}). Please adjust enforced stack parts.`
 }
 
-export function resolveStackRankings(selectedProblems, enforced = []) {
+export function resolveStackRankings(selectedProblems, enforced = [], performanceNeeds = []) {
   const problems = selectedProblems || []
-  const hasAnyFilter = (enforced && enforced.length > 0) || problems.length > 0
+  const hasAnyFilter =
+    (enforced && enforced.length > 0) ||
+    problems.length > 0 ||
+    (performanceNeeds && performanceNeeds.length > 0)
   if (!hasAnyFilter) return []
   if (!hasFeasibleEnforcedCombination(enforced)) return []
 
@@ -96,6 +105,7 @@ export function resolveStackRankings(selectedProblems, enforced = []) {
   const scored = stackContextKeys
     .map(parseStackKey)
     .filter((stack) => matchesEnforcedParts(stack, enforced))
+    .filter((stack) => matchesPerformanceNeeds(stack, performanceNeeds))
     .map((stack) => {
       const key = stackKey(stack)
       const problemScores = rankingByKey.get(key) || {}

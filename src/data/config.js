@@ -112,13 +112,28 @@ export const stackContextKeys = [
 // Users can enforce one or more specific parts of the stack.
 // `part` can be: dataPlatform | cicdTool | orchestrationTool
 export const enforcedStack = [
+  { id: 'enforce_data_amazon_redshift', label: 'Use Amazon Redshift', part: 'dataPlatform', value: 'amazon_redshift' },
   { id: 'enforce_data_snowflake', label: 'Use Snowflake', part: 'dataPlatform', value: 'snowflake' },
   { id: 'enforce_data_databricks', label: 'Use Databricks', part: 'dataPlatform', value: 'databricks' },
+  { id: 'enforce_data_google_bigquery', label: 'Use Google BigQuery', part: 'dataPlatform', value: 'google_bigquery' },
   { id: 'enforce_data_azure_synapse', label: 'Use Azure Synapse', part: 'dataPlatform', value: 'azure_synapse' },
   { id: 'enforce_data_sql_server', label: 'Use Microsoft SQL Server', part: 'dataPlatform', value: 'microsoft_sql_server' },
-  { id: 'enforce_cicd_azure_devops', label: 'Use Azure DevOps', part: 'cicdTool', value: 'azure_devops' },
+  { id: 'enforce_data_oracle', label: 'Use Oracle', part: 'dataPlatform', value: 'oracle' },
+  { id: 'enforce_data_singlestore', label: 'Use SingleStore', part: 'dataPlatform', value: 'singlestore' },
+  { id: 'enforce_data_fabric', label: 'Use Fabric', part: 'dataPlatform', value: 'fabric' },
+
   { id: 'enforce_cicd_github', label: 'Use GitHub', part: 'cicdTool', value: 'github' },
   { id: 'enforce_cicd_gitlab', label: 'Use GitLab', part: 'cicdTool', value: 'gitlab' },
+  { id: 'enforce_cicd_google_cloud_build', label: 'Use Google Cloud Build', part: 'cicdTool', value: 'google_cloud_build' },
+  { id: 'enforce_cicd_azure_devops', label: 'Use Azure DevOps', part: 'cicdTool', value: 'azure_devops' },
+  { id: 'enforce_cicd_azure_devops_plus_schemachange', label: 'Use Azure DevOps + Schemachange', part: 'cicdTool', value: 'azure_devops_plus_schemachange' },
+  { id: 'enforce_cicd_dataops_live', label: 'Use DataOps.live', part: 'cicdTool', value: 'dataops_live' },
+  { id: 'enforce_cicd_git', label: 'Use Git', part: 'cicdTool', value: 'git' },
+  { id: 'enforce_cicd_odi', label: 'Use ODI', part: 'cicdTool', value: 'odi' },
+  { id: 'enforce_cicd_no_ci_cd', label: 'Use No CI/CD', part: 'cicdTool', value: 'no_ci_cd' },
+  { id: 'enforce_cicd_other', label: 'Use Other CI/CD', part: 'cicdTool', value: 'other' },
+  { id: 'enforce_cicd_other_plus_schemachange', label: 'Use Other + Schemachange', part: 'cicdTool', value: 'other_plus_schemachange' },
+
   { id: 'enforce_orch_adf', label: 'Use Azure Data Factory', part: 'orchestrationTool', value: 'azure_data_factory' },
   { id: 'enforce_orch_airflow', label: 'Use Airflow', part: 'orchestrationTool', value: 'airflow' },
   { id: 'enforce_orch_talend', label: 'Use Talend', part: 'orchestrationTool', value: 'talend' },
@@ -146,6 +161,40 @@ export const deliveryComplications = [
   { id: 'git_only_promotion', label: 'Git-only promotion required', promptFile: '/prompts/5.deliveryComplications/6.complication_git_only_promotion.txt' },
   { id: 'custom_runner', label: 'Custom deployment runner required', promptFile: '/prompts/5.deliveryComplications/7.complication_custom_runner.txt' },
 ]
+
+// ─── Performance Priorities (search-only filters) ───────────────────
+export const performancePriorities = [
+  { id: 'downtime_important', label: 'Downtime is important' },
+  { id: 'speed_important', label: 'General speed is important' },
+  { id: 'reliability_important', label: 'Reliability is important' },
+  { id: 'throughput_important', label: 'High throughput is important' },
+  { id: 'fast_pipeline_feedback_important', label: 'Fast pipeline feedback is important' },
+  { id: 'high_deployment_frequency_important', label: 'High deployment frequency is important' },
+  { id: 'low_query_latency_important', label: 'Low query latency is important' },
+  { id: 'scalability_important', label: 'Scalability is important' },
+  { id: 'cost_efficiency_important', label: 'Cost efficiency is important' },
+]
+
+function seededBoolean(comboKey, capabilityId) {
+  // Deterministic random-like boolean for placeholder tuning.
+  let hash = 0
+  const seed = `${comboKey}|${capabilityId}`
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) % 1000003
+  }
+  return (hash % 100) >= 45
+}
+
+// Hardcoded placeholder capabilities per stack combo.
+// Key format: "dataPlatform__cicdTool__orchestrationTool"
+export const stackPerformanceCapabilitiesByCombo = stackContextKeys.reduce((acc, comboKey) => {
+  const capabilities = {}
+  for (const p of performancePriorities) {
+    capabilities[p.id] = seededBoolean(comboKey, p.id)
+  }
+  acc[comboKey] = capabilities
+  return acc
+}, {})
 
 // ─── Enterprise Constraints (checkboxes) ─────────────────────────────
 export const enterpriseConstraints = [

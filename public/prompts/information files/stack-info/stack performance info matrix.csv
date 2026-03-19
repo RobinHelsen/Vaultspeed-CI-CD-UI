@@ -1,0 +1,35 @@
+#,stack,downtime_important,speed_important,reliability_important,throughput_important,fast_pipeline_feedback_important,high_deployment_frequency_important,low_query_latency_important,scalability_important,cost_efficiency_important
+1,Databricks | Other | Native Databricks + Airflow,1,1,1,1,1,1,1,1,1
+2,Oracle | Git | Talend,1,1,1,1,1,1,1,1,1
+3,Snowflake | GitLab | Generic FMC - Snowflake,1,1,1,1,1,1,1,1,1
+4,Snowflake | GitLab | Airflow,1,1,1,1,1,1,1,1,1
+5,Azure Synapse | GitHub | Azure Data Factory,1,1,1,1,1,1,1,1,1
+6,Databricks | Azure DevOps | Azure Data Factory,1,1,1,1,1,1,1,1,1
+7,Fabric | Azure DevOps | Azure Data Factory,1,1,1,1,1,1,1,1,1
+8,Snowflake | GitHub | Generic FMC - Snowflake,1,1,1,1,1,1,1,1,1
+9,Azure Synapse | Azure DevOps | Azure Data Factory,1,1,1,1,1,1,1,1,1
+10,Oracle | GitHub | Airflow,1,1,1,1,1,1,1,1,1
+11,Snowflake | Azure DevOps | Azure Data Factory,1,1,1,1,1,1,1,1,1
+12,Snowflake | Azure DevOps + SchemaChange | Airflow,1,1,1,1,1,1,1,1,1
+13,Snowflake | Other + SchemaChange | Generic FMC - dbt,1,1,1,1,1,1,1,1,1
+14,Snowflake | Other | Other,1,1,1,1,1,1,1,1,1
+15,Microsoft SQL Server | No CI/CD | Talend,1,1,1,1,1,1,1,1,1
+16,Snowflake | Azure DevOps | Talend,1,1,1,1,1,1,1,1,1
+17,Google BigQuery | Google Cloud Build | Airflow,1,1,1,1,1,1,1,1,1
+18,Snowflake | No CI/CD | Airflow,1,1,1,1,1,1,1,1,1
+19,Snowflake | GitHub | Other,1,1,1,1,1,1,1,1,1
+20,Amazon Redshift | Unspecified | Unspecified,1,1,1,1,1,1,1,1,1
+21,Google BigQuery | GitLab | Airflow (Cloud Composer),1,1,1,1,1,1,1,1,1
+22,Databricks | Unspecified | Unspecified,1,1,1,1,1,1,1,1,1
+23,Microsoft SQL Server | Unspecified | Airflow,1,1,1,1,1,1,1,1,1
+24,Azure Synapse | Azure DevOps | ADF / Synapse Pipelines,1,1,1,1,1,1,1,1,1
+25,Snowflake | DataOps.live | Other,1,1,1,1,1,1,1,1,1
+26,Fabric | Unspecified | ADF,1,1,1,1,1,1,1,1,1
+27,Microsoft SQL Server | GitHub | Azure Data Factory,1,1,1,1,1,1,1,1,1
+28,Snowflake | GitHub | Azure Data Factory,1,1,1,1,1,1,1,1,1
+29,Microsoft SQL Server | Unspecified | Unspecified,1,1,1,1,1,1,1,1,1
+30,Snowflake | No CI/CD | Custom FMC,1,1,1,1,1,1,1,1,1
+31,SingleStore | GitHub | Airflow,1,1,1,1,1,1,1,1,1
+32,Snowflake | Unspecified | Airflow,1,1,1,1,1,1,1,1,1
+33,Microsoft SQL Server | Azure DevOps | Azure Data Factory,1,1,1,1,1,1,1,1,1
+34,Oracle | ODI | ODI,1,1,1,1,1,1,1,1,1
