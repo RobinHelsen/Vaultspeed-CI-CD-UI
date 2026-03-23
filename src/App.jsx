@@ -4,10 +4,11 @@ import Dropdown from './components/Dropdown'
 import MultiSelectDropdown from './components/MultiSelectDropdown'
 import ExtraInfoInput from './components/ExtraInfoInput'
 import GeneratedGuide from './components/GeneratedGuide'
+import ChatSidebar from './components/ChatSidebar'
 import StackSearchResults from './components/StackSearchResults'
 import { dataPlatforms, cicdTools, orchestrationTools, enterpriseConstraints, deliveryComplications, enforcedStack, largeScaleIssues, performancePriorities } from './data/config'
 import { resolveStackRankings, getEnforcedFeasibilityError } from './data/stackResolver'
-import { generateGuide } from './data/promptBuilder'
+import { generateGuide, sendChatMessage } from './data/promptBuilder'
 import { loadMatrixData } from './data/csvLoader'
 
 export default function App() {
@@ -38,7 +39,21 @@ export default function App() {
     try { return localStorage.getItem('vs_guideError') || '' } catch { return '' }
   })
 
-  // Persist guide content & error to localStorage whenever they change
+  // Original assembled prompt (needed for chat context)
+  const [originalPrompt, setOriginalPrompt] = useState(() => {
+    try { return localStorage.getItem('vs_originalPrompt') || '' } catch { return '' }
+  })
+
+  // Chat state — persisted in localStorage
+  const [chatMessages, setChatMessages] = useState(() => {
+    try {
+      const stored = localStorage.getItem('vs_chatMessages')
+      return stored ? JSON.parse(stored) : []
+    } catch { return [] }
+  })
+  const [chatOpen, setChatOpen] = useState(false)
+
+  // Persist guide content, error, prompt and chat to localStorage
   useEffect(() => {
     try {
       if (guideContent) localStorage.setItem('vs_guideContent', guideContent)
@@ -53,10 +68,27 @@ export default function App() {
     } catch { /* storage unavailable */ }
   }, [guideError])
 
+  useEffect(() => {
+    try {
+      if (originalPrompt) localStorage.setItem('vs_originalPrompt', originalPrompt)
+      else localStorage.removeItem('vs_originalPrompt')
+    } catch { /* storage unavailable */ }
+  }, [originalPrompt])
+
+  useEffect(() => {
+    try {
+      if (chatMessages.length > 0) localStorage.setItem('vs_chatMessages', JSON.stringify(chatMessages))
+      else localStorage.removeItem('vs_chatMessages')
+    } catch { /* storage unavailable */ }
+  }, [chatMessages])
+
   // Explicit clear action — the only way to discard the cached result
   function clearGuide() {
     setGuideContent('')
     setGuideError('')
+    setOriginalPrompt('')
+    setChatMessages([])
+    setChatOpen(false)
   }
 
   // Merge selected issue groups used by the stack ranker
@@ -104,7 +136,7 @@ export default function App() {
 
     try {
       // Pass dropdown values (used for stack file lookup) and IDs (used for prompt file lookup)
-      const content = await generateGuide({
+      const { text, prompt } = await generateGuide({
         dataPlatform: dp,
         cicdTool: ci,
         orchestrationTool: orch,
@@ -113,7 +145,9 @@ export default function App() {
         largeScale: ls,
         extraInfo: overrides.extraInfo ?? extraInfo,
       })
-      setGuideContent(content)
+      setGuideContent(text)
+      setOriginalPrompt(prompt)
+      setChatMessages([])  // Reset chat for new guide
     } catch (err) {
       setGuideError(err.message)
     } finally {
@@ -122,7 +156,7 @@ export default function App() {
   }, [dataPlatform, cicdTool, orchestrationTool, constraints, complications, enforced, largeScale, extraInfo])
 
   return (
-    <div className="app">
+    <div className={`app${chatOpen ? ' app-chat-open' : ''}`}>
       <header className="app-header">
         <h1>VaultSpeed CI/CD Setup Guide</h1>
         <p className="subtitle">Configure your stack below and get a tailored CI/CD setup guideline.</p>
@@ -214,12 +248,22 @@ export default function App() {
                     {guideLoading ? 'Generating...' : 'Generate Guide'}
                   </button>
                   {(guideContent || guideError) && !guideLoading && (
-                    <button
-                      className="clear-button"
-                      onClick={clearGuide}
-                    >
-                      Clear Prompt
-                    </button>
+                    <>
+                      <button
+                        className="clear-button"
+                        onClick={clearGuide}
+                      >
+                        Clear Prompt
+                      </button>
+                      {guideContent && (
+                        <button
+                          className="chat-toggle-button"
+                          onClick={() => setChatOpen(o => !o)}
+                        >
+                          {chatOpen ? 'Close Chat' : 'Chat about this guide'}
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -233,9 +277,30 @@ export default function App() {
                       >
                         Clear Prompt
                       </button>
+                      {guideContent && (
+                        <button
+                          className="chat-toggle-button"
+                          onClick={() => setChatOpen(o => !o)}
+                        >
+                          {chatOpen ? 'Close Chat' : 'Chat about this guide'}
+                        </button>
+                      )}
                     </div>
                   )}
-                  <GeneratedGuide content={guideContent} loading={guideLoading} error={guideError} />
+                  <div className={`guide-chat-layout${chatOpen ? ' chat-open' : ''}`}>
+                    <div className="guide-panel">
+                      <GeneratedGuide content={guideContent} loading={guideLoading} error={guideError} />
+                    </div>
+                    {chatOpen && guideContent && (
+                      <ChatSidebar
+                        originalPrompt={originalPrompt}
+                        guideContent={guideContent}
+                        chatMessages={chatMessages}
+                        setChatMessages={setChatMessages}
+                        onClose={() => setChatOpen(false)}
+                      />
+                    )}
+                  </div>
                 </>
               ) : !isComplete && (
                 <div className="result-panel empty">

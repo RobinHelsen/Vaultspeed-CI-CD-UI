@@ -227,5 +227,52 @@ export async function generateGuide({
   }
 
   const data = await response.json()
+  return { text: data.content?.[0]?.text || 'No response generated.', prompt }
+}
+
+// ─── Chat follow-up (reuses original context as system prompt) ───
+/**
+ * @param {Object}   params
+ * @param {string}   params.systemPrompt      — the original assembled prompt used for guide generation
+ * @param {string}   params.guideContent      — the generated guide (first assistant message)
+ * @param {Array}    params.chatHistory        — array of { role: 'user'|'assistant', content: string }
+ * @param {string}   params.userMessage        — the new follow-up question
+ * @returns {Promise<string>}                  — assistant reply
+ */
+export async function sendChatMessage({ systemPrompt, guideContent, chatHistory, userMessage }) {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
+  if (!apiKey || apiKey === 'your-api-key-here') {
+    throw new Error('Please set your Anthropic API key in the .env file (VITE_ANTHROPIC_API_KEY).')
+  }
+
+  // Build the messages array: original prompt→guide as first exchange, then chat history, then new question
+  const messages = [
+    { role: 'user', content: systemPrompt },
+    { role: 'assistant', content: guideContent },
+    ...chatHistory,
+    { role: 'user', content: userMessage },
+  ]
+
+  const response = await fetch('/api/anthropic/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4000,
+      messages,
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error(err.error?.message || `Anthropic API error: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
   return data.content?.[0]?.text || 'No response generated.'
 }
