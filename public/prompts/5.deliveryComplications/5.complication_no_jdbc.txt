@@ -1,4 +1,14 @@
 No direct JDBC deployment allowed.
 
-Direct JDBC connections to the target database are not permitted.
-Deployment must use alternative methods such as native CLI tools, REST APIs, or platform-specific deployment mechanisms.
+Context:
+Direct JDBC connections to the target database are restricted or prohibited.
+
+Implications for CI/CD:
+- Database deployment cannot rely on direct connections.
+- Alternative deployment mechanisms must be used.
+
+Requirements:
+- Use platform-native deployment methods (e.g., CLI tools, REST APIs, managed services).
+- Ensure compatibility with restricted network environments.
+- Avoid any JDBC-based execution steps in the pipeline.
+- Clearly define the deployment mechanism used.

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import ModeSelector from './components/ModeSelector'
 import Dropdown from './components/Dropdown'
 import MultiSelectDropdown from './components/MultiSelectDropdown'
@@ -8,6 +8,7 @@ import StackSearchResults from './components/StackSearchResults'
 import { dataPlatforms, cicdTools, orchestrationTools, enterpriseConstraints, deliveryComplications, enforcedStack, largeScaleIssues, performancePriorities } from './data/config'
 import { resolveStackRankings, getEnforcedFeasibilityError } from './data/stackResolver'
 import { generateGuide } from './data/promptBuilder'
+import { loadMatrixData } from './data/csvLoader'
 
 export default function App() {
   const [mode, setMode] = useState('') // '' | 'known' | 'search'
@@ -21,10 +22,42 @@ export default function App() {
   const [largeScale, setLargeScale] = useState([])
   const [extraInfo, setExtraInfo] = useState('')
 
-  // API result state (shared by both flows)
-  const [guideContent, setGuideContent] = useState('')
+  // CSV matrix data (loaded once on mount)
+  const [matrixData, setMatrixData] = useState({ problemMatrix: {}, performanceMatrix: {} })
+
+  useEffect(() => {
+    loadMatrixData().then(setMatrixData).catch((err) => console.error('Failed to load CSV matrices:', err))
+  }, [])
+
+  // API result state (shared by both flows) — persisted in localStorage
+  const [guideContent, setGuideContent] = useState(() => {
+    try { return localStorage.getItem('vs_guideContent') || '' } catch { return '' }
+  })
   const [guideLoading, setGuideLoading] = useState(false)
-  const [guideError, setGuideError] = useState('')
+  const [guideError, setGuideError] = useState(() => {
+    try { return localStorage.getItem('vs_guideError') || '' } catch { return '' }
+  })
+
+  // Persist guide content & error to localStorage whenever they change
+  useEffect(() => {
+    try {
+      if (guideContent) localStorage.setItem('vs_guideContent', guideContent)
+      else localStorage.removeItem('vs_guideContent')
+    } catch { /* storage unavailable */ }
+  }, [guideContent])
+
+  useEffect(() => {
+    try {
+      if (guideError) localStorage.setItem('vs_guideError', guideError)
+      else localStorage.removeItem('vs_guideError')
+    } catch { /* storage unavailable */ }
+  }, [guideError])
+
+  // Explicit clear action — the only way to discard the cached result
+  function clearGuide() {
+    setGuideContent('')
+    setGuideError('')
+  }
 
   // Merge selected issue groups used by the stack ranker
   const allSelected = useMemo(() => [...largeScale, ...constraints, ...complications], [largeScale, constraints, complications])
@@ -35,10 +68,10 @@ export default function App() {
     [enforced, allSelected, performanceNeeds]
   )
 
-  // "Find best stack" results (rankings are still hardcoded)
+  // "Find best stack" results (driven by CSV matrix data)
   const stackResults = useMemo(
-    () => (enforcedError ? [] : resolveStackRankings(allSelected, enforced, performanceNeeds)),
-    [allSelected, enforced, performanceNeeds, enforcedError]
+    () => (enforcedError ? [] : resolveStackRankings(allSelected, enforced, performanceNeeds, matrixData)),
+    [allSelected, enforced, performanceNeeds, enforcedError, matrixData]
   )
 
   const isComplete = dataPlatform && cicdTool && orchestrationTool
@@ -54,8 +87,6 @@ export default function App() {
     setPerformanceNeeds([])
     setLargeScale([])
     setExtraInfo('')
-    setGuideContent('')
-    setGuideError('')
   }
 
   // Shared function to call the prompt builder + Anthropic API — used by both flows
@@ -173,8 +204,8 @@ export default function App() {
 
             <section className="result-section">
               <h2>Generated CI/CD Setup Guide</h2>
-              {isComplete ? (
-                <>
+              {isComplete && (
+                <div className="guide-actions">
                   <button
                     className="generate-button"
                     onClick={() => callGenerateGuide()}
@@ -182,9 +213,31 @@ export default function App() {
                   >
                     {guideLoading ? 'Generating...' : 'Generate Guide'}
                   </button>
+                  {(guideContent || guideError) && !guideLoading && (
+                    <button
+                      className="clear-button"
+                      onClick={clearGuide}
+                    >
+                      Clear Prompt
+                    </button>
+                  )}
+                </div>
+              )}
+              {(guideContent || guideLoading || guideError) ? (
+                <>
+                  {!isComplete && (guideContent || guideError) && !guideLoading && (
+                    <div className="guide-actions">
+                      <button
+                        className="clear-button"
+                        onClick={clearGuide}
+                      >
+                        Clear Prompt
+                      </button>
+                    </div>
+                  )}
                   <GeneratedGuide content={guideContent} loading={guideLoading} error={guideError} />
                 </>
-              ) : (
+              ) : !isComplete && (
                 <div className="result-panel empty">
                   <p>
                     Complete the stack selection above to generate your guide.

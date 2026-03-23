@@ -1,4 +1,14 @@
 Multiple environments with different authentication methods.
 
-Different deployment environments use different authentication mechanisms (e.g., service principals, key vaults, IAM roles).
-The pipeline must be flexible enough to handle varying credential types across environments.
+Context:
+Each environment (e.g., dev, test, prod) may use a different authentication mechanism such as service principals, IAM roles, or key vault-based secrets.
+
+Implications for CI/CD:
+- Authentication cannot be hardcoded or uniform across environments.
+- The pipeline must dynamically adapt authentication strategy per environment.
+
+Requirements:
+- Parameterize authentication configuration per environment.
+- Support multiple authentication mechanisms (e.g., service principal, managed identity, API keys).
+- Securely retrieve credentials (e.g., from secret managers or vaults).
+- Avoid storing credentials directly in pipeline code.

@@ -1,4 +1,14 @@
 Different team owns database deployment.
 
-Database changes are deployed by a separate team or DBA group.
-The CI/CD pipeline must produce deployment-ready artifacts that can be handed off rather than deployed directly.
+Context:
+Database changes are deployed by a separate team (e.g., DBA team), and the CI/CD pipeline cannot directly apply changes to the database.
+
+Implications for CI/CD:
+- The pipeline must not execute database deployment commands.
+- Outputs must be consumable by another team.
+
+Requirements:
+- Generate deployment-ready artifacts (e.g., SQL scripts, migration files).
+- Ensure artifacts are versioned and traceable.
+- Include validation or linting steps, but not execution.
+- Provide clear instructions or documentation for the receiving team.

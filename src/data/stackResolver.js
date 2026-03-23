@@ -1,43 +1,22 @@
 /**
- * Resolves ranked stack combinations based on selected problems.
+ * Resolves ranked stack combinations based on CSV matrix data.
  *
- * For each stack in stackRankings:
- *   - Sum the scores for each selected problem.
- *   - Divide by number of selected problems to get an average score.
- *   - Sort descending (best fit first).
+ * Problem matrix values: 0 = no issue, 1 = worst issue.
+ *   → Inverted for scoring: score = (1 - value), so 0 problems → 1 (best), 1 problem → 0 (worst).
  *
- * Returns an array of { stack, totalScore, avgScore, breakdown }.
+ * Performance matrix values: 1 = good, 0 = lacking.
+ *   → Used directly: higher = better.
+ *
+ * Both dimensions are summed per stack and normalized to a 0–10 scale
+ * relative to the best stack in the result set.
+ *
+ * Returns an array of { stack info, totalScore, avgScore, breakdown }.
  */
 
-import { stackRankings, dataPlatforms, cicdTools, orchestrationTools, enforcedStack, stackContextKeys, stackPerformanceCapabilitiesByCombo } from './config'
+import { dataPlatforms, cicdTools, orchestrationTools, enforcedStack, stackContextKeys } from './config'
 
 function getLabel(options, value) {
   return options.find((o) => o.value === value)?.label ?? value
-}
-
-const aliasMap = {
-  dataPlatform: {
-    bigquery: 'google_bigquery',
-    redshift: 'amazon_redshift',
-    synapse: 'azure_synapse',
-    postgres: 'microsoft_sql_server',
-  },
-  orchestrationTool: {
-    adf: 'azure_data_factory',
-  },
-}
-
-function normalizeValue(part, value) {
-  return aliasMap[part]?.[value] ?? value
-}
-
-function normalizeStackParts(stack) {
-  return {
-    ...stack,
-    dataPlatform: normalizeValue('dataPlatform', stack.dataPlatform),
-    cicdTool: normalizeValue('cicdTool', stack.cicdTool),
-    orchestrationTool: normalizeValue('orchestrationTool', stack.orchestrationTool),
-  }
 }
 
 function stackKey(stack) {
@@ -61,18 +40,11 @@ function matchesEnforcedParts(stack, enforcedIds) {
   return rules.every((rule) => stack[rule.part] === rule.value)
 }
 
-function matchesPerformanceNeeds(stack, performanceNeeds) {
-  if (!performanceNeeds || performanceNeeds.length === 0) return true
-  const capabilities = stackPerformanceCapabilitiesByCombo[stackKey(stack)] || {}
-  return performanceNeeds.every((needId) => capabilities[needId] === true)
-}
-
 function hasFeasibleEnforcedCombination(enforcedIds) {
   if (!enforcedIds || enforcedIds.length === 0) return true
   const rules = getEnforcedRules(enforcedIds)
   return stackContextKeys.some((key) => {
-    const [dataPlatform, cicdTool, orchestrationTool] = key.split('__')
-    const combo = { dataPlatform, cicdTool, orchestrationTool }
+    const combo = parseStackKey(key)
     return rules.every((rule) => combo[rule.part] === rule.value)
   })
 }
@@ -85,7 +57,15 @@ export function getEnforcedFeasibilityError(enforcedIds = []) {
   return `No feasible stack context file exists for this enforced combination (${selected}). Please adjust enforced stack parts.`
 }
 
-export function resolveStackRankings(selectedProblems, enforced = [], performanceNeeds = []) {
+/**
+ * Main resolver.
+ *
+ * @param {string[]} selectedProblems - IDs of checked problem checkboxes (LCI + EC + DC)
+ * @param {string[]} enforced - IDs of enforced stack part checkboxes
+ * @param {string[]} performanceNeeds - IDs of checked performance priority checkboxes
+ * @param {{ problemMatrix, performanceMatrix }} matrixData - Parsed CSV data from csvLoader
+ */
+export function resolveStackRankings(selectedProblems, enforced = [], performanceNeeds = [], matrixData = {}) {
   const problems = selectedProblems || []
   const hasAnyFilter =
     (enforced && enforced.length > 0) ||
@@ -94,31 +74,37 @@ export function resolveStackRankings(selectedProblems, enforced = [], performanc
   if (!hasAnyFilter) return []
   if (!hasFeasibleEnforcedCombination(enforced)) return []
 
-  const rankingByKey = new Map(
-    stackRankings
-      .map((stack) => {
-        const normalized = normalizeStackParts(stack)
-        return [stackKey(normalized), stack.problemScores || {}]
-      })
-  )
+  const { problemMatrix = {}, performanceMatrix = {} } = matrixData
 
-  const scored = stackContextKeys
+  // Score each stack
+  const candidates = stackContextKeys
     .map(parseStackKey)
     .filter((stack) => matchesEnforcedParts(stack, enforced))
-    .filter((stack) => matchesPerformanceNeeds(stack, performanceNeeds))
     .map((stack) => {
       const key = stackKey(stack)
-      const problemScores = rankingByKey.get(key) || {}
-      let totalScore = 0
-      const breakdown = {}
+      const problemValues = problemMatrix[key] || {}
+      const performanceValues = performanceMatrix[key] || {}
 
+      // --- Problem dimension ---
+      // For each checked problem, the CSV value (0-1) represents how bad the stack is.
+      // Invert: score contribution = (1 - csvValue). Sum all checked problems.
+      let problemScore = 0
+      const breakdown = {}
       for (const problemId of problems) {
-        const score = problemScores[problemId] ?? 0
-        totalScore += score
-        breakdown[problemId] = score
+        const csvVal = problemValues[problemId] ?? 0
+        const inverted = 1 - csvVal  // 0 csv = 1 (best), 1 csv = 0 (worst)
+        problemScore += inverted
+        breakdown[problemId] = inverted
       }
 
-      const avgScore = problems.length > 0 ? totalScore / problems.length : 0
+      // --- Performance dimension ---
+      // For each checked performance priority, CSV value (0-1) is how good the stack is.
+      // Sum directly.
+      let performanceScore = 0
+      for (const perfId of performanceNeeds) {
+        const csvVal = performanceValues[perfId] ?? 1
+        performanceScore += csvVal
+      }
 
       return {
         dataPlatform: stack.dataPlatform,
@@ -127,15 +113,56 @@ export function resolveStackRankings(selectedProblems, enforced = [], performanc
         dataPlatformLabel: getLabel(dataPlatforms, stack.dataPlatform),
         cicdToolLabel: getLabel(cicdTools, stack.cicdTool),
         orchestrationToolLabel: getLabel(orchestrationTools, stack.orchestrationTool),
-        totalScore,
-        avgScore: Math.round(avgScore * 10) / 10,
+        rawProblemScore: problemScore,
+        rawPerformanceScore: performanceScore,
         breakdown,
       }
     })
-    .sort((a, b) => {
-      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore
-      return stackKey(a).localeCompare(stackKey(b))
-    })
+
+  if (candidates.length === 0) return []
+
+  // --- Normalize each dimension to 0–10 ---
+  const maxProblem = Math.max(...candidates.map((c) => c.rawProblemScore), 0.001)
+  const maxPerformance = Math.max(...candidates.map((c) => c.rawPerformanceScore), 0.001)
+
+  const hasProblems = problems.length > 0
+  const hasPerformance = performanceNeeds.length > 0
+
+  const scored = candidates.map((c) => {
+    const normProblem = hasProblems ? (c.rawProblemScore / maxProblem) * 10 : 0
+    const normPerformance = hasPerformance ? (c.rawPerformanceScore / maxPerformance) * 10 : 0
+
+    // Combine: average of active dimensions
+    const activeDimensions = (hasProblems ? 1 : 0) + (hasPerformance ? 1 : 0)
+    const totalScore = activeDimensions > 0
+      ? (normProblem + normPerformance) / activeDimensions
+      : 0
+
+    // Normalize per-problem breakdown values to 0-10 scale
+    const normalizedBreakdown = {}
+    for (const problemId of problems) {
+      const rawVal = c.breakdown[problemId] ?? 0
+      // Scale: 1 (no issue) → 10, 0 (worst) → 0
+      normalizedBreakdown[problemId] = Math.round(rawVal * 10 * 10) / 10
+    }
+
+    return {
+      dataPlatform: c.dataPlatform,
+      cicdTool: c.cicdTool,
+      orchestrationTool: c.orchestrationTool,
+      dataPlatformLabel: c.dataPlatformLabel,
+      cicdToolLabel: c.cicdToolLabel,
+      orchestrationToolLabel: c.orchestrationToolLabel,
+      totalScore: Math.round(totalScore * 10) / 10,
+      avgScore: Math.round(totalScore * 10) / 10,
+      breakdown: normalizedBreakdown,
+    }
+  })
+
+  scored.sort((a, b) => {
+    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore
+    return stackKey(a).localeCompare(stackKey(b))
+  })
 
   return scored
 }

@@ -1,7 +1,19 @@
-Manual approvals are required.
+Manual approvals required
 
-Higher environment deployments must include approval gates before execution.
-Do not fully automate release into controlled environments without an explicit approval step.
+Context:
+Certain environments (typically staging or production) require human approval before deployments can proceed.
 
-Use environment-based approvals, release gates, or protected deployment stages.
-Ensure approvers are clearly defined and approvals are auditable.
+Hard Constraints:
+- MUST require manual approval before deploying to protected environments.
+- MUST NOT allow fully automated deployment to production.
+- MUST ensure approval actions are traceable.
+
+Implications for CI/CD:
+- Pipeline execution must pause for approval gates.
+- Deployment flow must support human intervention.
+
+Required Implementation:
+- Implement approval steps in the pipeline for protected environments.
+- Restrict approvals to authorized users or roles.
+- Log all approval actions for audit purposes.
+- Ensure rejected approvals stop the deployment.

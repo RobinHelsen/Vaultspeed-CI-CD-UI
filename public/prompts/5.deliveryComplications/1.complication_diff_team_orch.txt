@@ -1,5 +1,14 @@
 Different team owns orchestration.
 
-The orchestration layer is managed by a separate team.
-This means the CI/CD pipeline cannot directly deploy or configure orchestration jobs.
-The solution must account for handoff points, shared contracts, and coordination between teams.
+Context:
+The orchestration layer (e.g., schedulers, workflows, pipelines) is managed by a separate team and cannot be directly modified or deployed by this CI/CD pipeline.
+
+Implications for CI/CD:
+- Direct deployment or configuration of orchestration jobs is not allowed.
+- Integration must happen through defined interfaces or handoff mechanisms.
+
+Requirements:
+- Generate deployment artifacts or configuration outputs that can be consumed by the orchestration team.
+- Clearly define integration points (e.g., triggers, APIs, configuration files).
+- Avoid including orchestration deployment steps in the pipeline.
+- Document handoff steps and responsibilities between teams.

@@ -1,7 +1,16 @@
-Separation of duties is required.
+Separation of duties required
 
-Development, approval, and production deployment responsibilities must remain separated.
-Do not design a solution where the same actor can develop, approve, and deploy to production without control points.
+Context:
+Different roles must handle development, approval, and deployment to enforce governance.
 
-Use role separation, protected environments, and controlled promotion between stages.
-Ensure deployment permissions align with enterprise governance.
+Hard Constraints:
+- MUST separate responsibilities between developers, approvers, and deployers.
+- MUST NOT allow one user to control the entire deployment lifecycle.
+
+Implications for CI/CD:
+- Pipelines must enforce role boundaries.
+
+Required Implementation:
+- Enforce role-based access control (RBAC).
+- Require approvals from users different than the code author.
+- Restrict deployment permissions to specific roles.

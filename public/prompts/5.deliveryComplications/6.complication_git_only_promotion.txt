@@ -1,4 +1,14 @@
 Git-only promotion required.
 
-All promotions between environments must happen through Git (e.g., merge-based promotion).
-No out-of-band deployments or direct pushes to higher environments are allowed.
+Context:
+All promotions between environments must occur through Git workflows (e.g., pull requests, merges). Direct deployments to higher environments are not allowed.
+
+Implications for CI/CD:
+- Promotion logic must be Git-driven.
+- Pipelines must not bypass version control.
+
+Requirements:
+- Implement environment promotion through branch or merge strategies.
+- Trigger deployments based on Git events (e.g., merge to main or release branch).
+- Ensure all changes are traceable through version control history.
+- Prevent manual or out-of-band deployments.

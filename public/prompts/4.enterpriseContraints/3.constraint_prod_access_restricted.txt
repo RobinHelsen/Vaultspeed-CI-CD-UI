@@ -1,7 +1,16 @@
-Production access is restricted.
+Production access restricted
 
-Direct human or pipeline access to production targets may be limited or prohibited.
-Production deployment must use approved controlled paths.
+Context:
+Access to production environments is tightly controlled and limited.
 
-Use delegated deployment agents, approved service identities, protected environments, or controlled release pipelines.
-Minimize standing access and avoid direct interactive deployment patterns.
+Hard Constraints:
+- MUST restrict access to production environments.
+- MUST NOT allow unrestricted or direct access.
+
+Implications for CI/CD:
+- Deployment must be mediated and controlled.
+
+Required Implementation:
+- Use controlled deployment pipelines only.
+- Restrict credentials and access permissions.
+- Audit all production interactions.

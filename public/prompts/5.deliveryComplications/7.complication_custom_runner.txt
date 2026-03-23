@@ -1,4 +1,14 @@
 Custom deployment runner required.
 
-A custom or self-hosted runner is required for executing CI/CD pipelines.
-The solution must account for runner provisioning, network access, and tooling availability on the custom runner.
+Context:
+CI/CD pipelines must run on a custom or self-hosted runner instead of managed runners.
+
+Implications for CI/CD:
+- Execution environment is not guaranteed to be preconfigured.
+- Network and tool availability must be explicitly handled.
+
+Requirements:
+- Ensure required tools and dependencies are installed or validated at runtime.
+- Account for network access to required systems (e.g., databases, APIs).
+- Avoid assumptions about pre-installed software.
+- Include setup or bootstrap steps if necessary.

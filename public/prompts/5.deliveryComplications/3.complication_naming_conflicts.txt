@@ -1,4 +1,14 @@
 Shared platform with naming conflicts.
 
-Multiple projects or teams share the same data platform instance.
-Object naming conflicts are possible and must be mitigated through namespacing, schemas, or naming conventions.
+Context:
+Multiple teams or projects share the same data platform instance, increasing the risk of object naming conflicts.
+
+Implications for CI/CD:
+- Resource names must be unique across teams and projects.
+- Hardcoded or generic naming is not allowed.
+
+Requirements:
+- Enforce naming conventions using prefixes, suffixes, or namespaces (e.g., project, environment).
+- Use schemas or logical isolation where supported.
+- Parameterize all resource names in the pipeline.
+- Ensure generated names are deterministic and consistent across environments.

@@ -1,7 +1,16 @@
-Private network access is required.
+Private network only
 
-Deployment execution must run through private connectivity or inside the customer-controlled network.
-Do not assume public internet access from runners, agents, or target systems.
+Context:
+All systems operate within private network boundaries.
 
-Use self-hosted runners, private agents, or approved private networking patterns.
-Keep deployment traffic, secrets access, and target connectivity inside governed network boundaries.
+Hard Constraints:
+- MUST operate within private network.
+- MUST NOT expose services publicly.
+
+Implications for CI/CD:
+- Connectivity must be internal.
+
+Required Implementation:
+- Use private endpoints and internal routing.
+- Ensure runners have network access.
+- Avoid public endpoints.
