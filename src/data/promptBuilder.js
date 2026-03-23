@@ -214,7 +214,7 @@ export async function generateGuide({
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      max_tokens: 16000,
       messages: [
         { role: 'user', content: prompt },
       ],
@@ -263,7 +263,7 @@ export async function sendChatMessage({ systemPrompt, guideContent, chatHistory,
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      max_tokens: 16000,
       messages,
     }),
   })
