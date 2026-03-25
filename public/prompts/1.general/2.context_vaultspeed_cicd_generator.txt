@@ -128,6 +128,32 @@ When generating documentation, include:
 - risks and mitigations
 - operating model notes
 
+The folders and files that Vaultpseed generates are in the following structure,
+In this way the initial deployable files are structured
+
+vaultspeed/
+├─ ALL/
+│  └─ FLOW_MANAGEMENT_CONTROL_LAYER/        # shared FMC SQL
+├─ DDL/
+│  ├─ 00_*, 01_*, 03_*, 04_*, 05_*, 06_*    # ordered DDL generation
+│  ├─ BUSINESS_VAULT_LAYER/                 # 316_* BV objects
+│  └─ DELTA_FIREWALL_LAYER/                 # 308_* delta firewall
+├─ FMC/
+│  ├─ FL_DAG_*.py
+│  ├─ FL_mtd_*.json
+│  ├─ mappings_*.json
+│  └─ variables.json
+├─ INIT/                                    # first/full loads
+│  ├─ EXTRACTION_LAYER/                     # 310_*_init.sql
+│  ├─ STAGING_LAYER/                        # 312_*_init.sql
+│  ├─ FOUNDATION_LAYER/                     # 314_*_init.sql
+│  └─ FLOW_MANAGEMENT_CONTROL_LAYER/        # 302_*_init*.sql
+└─ INCR/                                    # incremental loads
+   ├─ EXTRACTION_LAYER/                     # 310_*_incr.sql
+   ├─ STAGING_LAYER/                        # 312_*_incr.sql
+   ├─ FOUNDATION_LAYER/                     # 314_*_incr.sql
+   └─ FLOW_MANAGEMENT_CONTROL_LAYER/        # 302_*_incr*.sql
+
 Always tailor the output to the selected stack.
 
 If information is missing, make reasonable enterprise-safe assumptions and state them clearly.

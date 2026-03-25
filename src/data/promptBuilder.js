@@ -213,8 +213,8 @@ export async function generateGuide({
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 16000,
+      model: 'claude-opus-4-6',
+      max_tokens: 30000,
       messages: [
         { role: 'user', content: prompt },
       ],
