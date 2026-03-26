@@ -1,4 +1,70 @@
+import { useRef } from 'react'
+
 export default function GeneratedGuide({ content, loading, error }) {
+  const guideRef = useRef(null)
+
+  const exportToPdf = () => {
+    if (!guideRef.current) return
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    const html = guideRef.current.innerHTML
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>VaultSpeed CI/CD Guide</title>
+  <style>
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 11pt;
+      line-height: 1.7;
+      color: #1a1a1a;
+      background: #ffffff;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 40px;
+    }
+    h2, h3, h4 { color: #0f4c81; margin-top: 1.4em; }
+    h2 { font-size: 1.5em; border-bottom: 2px solid #0f4c81; padding-bottom: 0.3em; }
+    h3 { font-size: 1.25em; }
+    h4 { font-size: 1.1em; }
+    pre {
+      background: #f4f4f5;
+      padding: 12px 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.9em;
+      line-height: 1.5;
+    }
+    code {
+      background: #f4f4f5;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    pre code { background: none; padding: 0; }
+    ul, ol { padding-left: 1.5em; }
+    li { margin-bottom: 0.3em; }
+    strong { color: #111; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #f0f0f0; }
+    @media print {
+      body { padding: 0; margin: 0; }
+    }
+  </style>
+</head>
+<body>${html}</body>
+</html>`)
+    printWindow.document.close()
+    // Wait for content to render, then trigger print dialog
+    printWindow.onload = () => {
+      printWindow.focus()
+      printWindow.print()
+    }
+  }
+
   if (loading) {
     return (
       <div className="result-panel loading">
@@ -25,7 +91,15 @@ export default function GeneratedGuide({ content, loading, error }) {
 
   return (
     <div className="result-panel generated-guide">
-      <div className="guide-content" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="guide-export-bar">
+        <button
+          className="export-pdf-button"
+          onClick={exportToPdf}
+        >
+          Export to PDF
+        </button>
+      </div>
+      <div className="guide-content" ref={guideRef} dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   )
 }

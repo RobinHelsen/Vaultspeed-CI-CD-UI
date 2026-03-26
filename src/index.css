@@ -618,6 +618,37 @@ body {
   padding: 1.5rem;
 }
 
+.guide-export-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.export-pdf-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.2rem;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.export-pdf-button:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.export-pdf-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .guide-content h2 {
   font-size: 1.15rem;
   color: var(--color-accent);
