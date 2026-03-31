@@ -10,6 +10,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
       },
+      // ── Backend API (Spring Boot on port 8080) ────────
+      '/api/docs': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 })

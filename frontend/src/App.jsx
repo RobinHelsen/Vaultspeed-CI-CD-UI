@@ -130,6 +130,8 @@ export default function App() {
     const comps = overrides.complications || complications
     const ls = overrides.largeScale || largeScale
 
+    console.log('[App] callGenerateGuide started', { dp, ci, orch, cons, comps, ls })
+
     setGuideContent('')
     setGuideError('')
     setGuideLoading(true)
@@ -145,10 +147,12 @@ export default function App() {
         largeScale: ls,
         extraInfo: overrides.extraInfo ?? extraInfo,
       })
+      console.log('[App] generateGuide returned — prompt length:', prompt.length, ', response length:', text.length)
       setGuideContent(text)
       setOriginalPrompt(prompt)
       setChatMessages([])  // Reset chat for new guide
     } catch (err) {
+      console.error('[App] generateGuide FAILED:', err)
       setGuideError(err.message)
     } finally {
       setGuideLoading(false)

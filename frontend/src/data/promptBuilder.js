@@ -8,6 +8,7 @@
  *
  *   1. General context files       (1.general/)              — always included
  *   2. Stack context file          (2.stackContext/)          — matched by dropdown combo
+ *   2b. External documentation     (MCP providers)            — fetched per stack element
  *   3. Large-scale issue files     (3.largeScaleIssues/)     — per selected issue
  *   4. Enterprise constraint files (4.enterpriseContraints/)  — per selected constraint
  *   5. Delivery complication files (5.deliveryComplications/) — per selected complication
@@ -20,6 +21,7 @@ import {
   enterpriseConstraints,
   deliveryComplications,
 } from './config'
+import { fetchStackDocumentation, formatDocsForPrompt } from './docFetcher'
 
 // ─── File-content cache (avoids re-fetching the same file) ───────────
 const fileCache = new Map()
@@ -82,6 +84,7 @@ async function buildPrompt({
   largeScaleIds,
   extraInfo,
 }) {
+  console.log('[promptBuilder] buildPrompt called with:', { dataPlatform, cicdTool, orchestrationTool, constraintIds, complicationIds, largeScaleIds })
   const parts = []
 
   // 1. General context (always loaded)
@@ -93,6 +96,7 @@ async function buildPrompt({
       parts.push('')
     }
   })
+  console.log('[promptBuilder] Step 1 done — general context files loaded:', generalTexts.filter(Boolean).length)
 
   // 2. Stack context (matched by dropdown combination)
   const { path: stackPath, content: stackText } = await fetchStackContext(
@@ -107,6 +111,21 @@ async function buildPrompt({
     parts.push(`No specific stack context file found for: ${dataPlatform} / ${cicdTool} / ${orchestrationTool}`)
     parts.push('Please generate a best-effort guide based on the general context and the stack combination above.')
     parts.push('')
+  }
+  console.log('[promptBuilder] Step 2 done — stack context:', stackPath || 'NOT FOUND')
+
+  // 2b. External documentation (fetched from MCP providers per stack element)
+  console.log('[promptBuilder] Step 2b — fetching external docs from backend...')
+  try {
+    const externalDocs = await fetchStackDocumentation({ dataPlatform, cicdTool, orchestrationTool })
+    const docsText = formatDocsForPrompt(externalDocs)
+    console.log('[promptBuilder] Step 2b done — external docs length:', docsText?.length || 0)
+    if (docsText) {
+      parts.push(docsText)
+    }
+  } catch (err) {
+    console.warn('[promptBuilder] Step 2b FAILED (non-blocking):', err.message)
+    // External docs are supplementary — continue building the prompt without them
   }
 
   // 3. Large-scale issues
@@ -165,6 +184,7 @@ async function buildPrompt({
   parts.push('- setup instructions')
   parts.push('- implementation documentation')
 
+  console.log('[promptBuilder] Prompt fully assembled — total length:', parts.join('\n').length)
   return parts.join('\n')
 }
 
@@ -204,6 +224,7 @@ export async function generateGuide({
     extraInfo,
   })
 
+  console.log('[generateGuide] Prompt built — sending to Anthropic API...')
   const response = await fetch('/api/anthropic/v1/messages', {
     method: 'POST',
     headers: {
@@ -213,8 +234,8 @@ export async function generateGuide({
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: 'claude-opus-4-6',
-      max_tokens: 30000,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
       messages: [
         { role: 'user', content: prompt },
       ],
@@ -227,6 +248,7 @@ export async function generateGuide({
   }
 
   const data = await response.json()
+  console.log('[generateGuide] Anthropic API responded — content length:', data.content?.[0]?.text?.length || 0)
   return { text: data.content?.[0]?.text || 'No response generated.', prompt }
 }
 

@@ -1,5 +1,15 @@
-node_modules
-dist
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.env
+
+# Backend
+backend/target
+backend/.mvn
+backend/*.iml
+backend/.idea
+
+# General
 .DS_Store
 *.local
 .env
